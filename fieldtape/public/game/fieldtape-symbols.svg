@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <title>Original FieldTape game symbols</title>
+  <defs>
+    <linearGradient id="soil-gradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c5336"/>
+      <stop offset="1" stop-color="#3d2b20"/>
+    </linearGradient>
+    <pattern id="furrow" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(18)">
+      <rect width="8" height="8" fill="url(#soil-gradient)"/>
+      <path d="M0 2h8M0 6h8" stroke="#b88354" stroke-opacity=".24" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <symbol id="tile-soil" viewBox="0 0 64 64">
+    <rect x="1" y="1" width="62" height="62" fill="url(#furrow)" stroke="#271c15" stroke-width="2"/>
+  </symbol>
+
+  <symbol id="tile-locked" viewBox="0 0 64 64">
+    <rect x="1" y="1" width="62" height="62" fill="#25231f" stroke="#111" stroke-width="2"/>
+    <path d="M9 12l43 43M4 33l29 29M31 3l29 29" stroke="#dfb15a" stroke-opacity=".2" stroke-width="4"/>
+    <path d="M25 31v-6a7 7 0 0114 0v6" fill="none" stroke="#d7c9aa" stroke-width="3"/>
+    <rect x="21" y="30" width="22" height="18" fill="#d7c9aa"/>
+    <circle cx="32" cy="39" r="2.5" fill="#25231f"/>
+  </symbol>
+
+  <symbol id="crop-wheat" viewBox="0 0 64 64">
+    <path d="M31 56V13M22 54l9-17M40 53l-9-18" fill="none" stroke="#e8c35b" stroke-width="3" stroke-linecap="round"/>
+    <g fill="#f5d878" stroke="#7a551d" stroke-width="1">
+      <ellipse cx="25" cy="17" rx="4" ry="8" transform="rotate(-35 25 17)"/>
+      <ellipse cx="37" cy="19" rx="4" ry="8" transform="rotate(35 37 19)"/>
+      <ellipse cx="26" cy="28" rx="4" ry="8" transform="rotate(-38 26 28)"/>
+      <ellipse cx="38" cy="30" rx="4" ry="8" transform="rotate(38 38 30)"/>
+    </g>
+  </symbol>
+
+  <symbol id="crop-carrot" viewBox="0 0 64 64">
+    <path d="M32 25c-10 0-12 7-8 15l8 16 8-16c4-8 2-15-8-15z" fill="#ef7b32" stroke="#753513" stroke-width="2"/>
+    <path d="M32 27c-8-7-5-15-2-19 5 6 5 11 2 19zm1 0c6-8 11-8 15-7-4 7-9 9-15 7z" fill="#5f9f52" stroke="#234d2b" stroke-width="2"/>
+  </symbol>
+
+  <symbol id="crop-tomato" viewBox="0 0 64 64">
+    <circle cx="25" cy="38" r="11" fill="#e94b3c" stroke="#6f201c" stroke-width="2"/>
+    <circle cx="42" cy="40" r="10" fill="#cc382f" stroke="#6f201c" stroke-width="2"/>
+    <path d="M31 12v19M18 29l13-7 13 8M31 21l-8-8M31 19l9-8" fill="none" stroke="#4e8c4c" stroke-width="3" stroke-linecap="round"/>
+  </symbol>
+
+  <symbol id="crop-strawberry" viewBox="0 0 64 64">
+    <path d="M18 27c0 17 8 28 14 30 7-3 15-14 15-30-7-6-22-6-29 0z" fill="#d7353f" stroke="#6d1b25" stroke-width="2"/>
+    <path d="M18 26c3-9 10-12 14-12 6 0 12 4 15 12-10-5-20-5-29 0z" fill="#66a957" stroke="#2f6031" stroke-width="2"/>
+    <g fill="#f5cf72"><circle cx="26" cy="34" r="1.5"/><circle cx="39" cy="34" r="1.5"/><circle cx="31" cy="43" r="1.5"/><circle cx="38" cy="48" r="1.5"/></g>
+  </symbol>
+
+  <symbol id="crop-melon" viewBox="0 0 64 64">
+    <circle cx="32" cy="36" r="21" fill="#6fae55" stroke="#274f2d" stroke-width="3"/>
+    <path d="M32 15c-10 8-11 33 0 42m0-42c10 8 11 33 0 42M14 31h36M13 42h38" fill="none" stroke="#b7ce63" stroke-width="2" stroke-opacity=".9"/>
+    <path d="M32 16c0-7 5-10 10-10" fill="none" stroke="#3f713d" stroke-width="3"/>
+  </symbol>
+
+  <symbol id="animal-goose" viewBox="0 0 64 64">
+    <path d="M18 43c0-12 9-18 20-14 2-11 1-16 8-18 8 5 4 14-1 20 5 6 3 18-6 21-10 4-21 0-21-9z" fill="#f1ead8" stroke="#433f38" stroke-width="2"/>
+    <path d="M46 20l12 4-12 4" fill="#e7a33d" stroke="#7b4d19" stroke-width="2"/>
+    <circle cx="47" cy="16" r="2" fill="#161616"/>
+  </symbol>
+
+  <symbol id="animal-cow" viewBox="0 0 64 64">
+    <path d="M13 23h39v27H13z" fill="#eee5ce" stroke="#302c26" stroke-width="2"/>
+    <path d="M13 29c9-9 15 3 22-5s14 1 17 4v19c-8 5-13-4-22 1-7 4-12 0-17-2z" fill="#403832"/>
+    <path d="M17 50v8m30-8v8M11 20l-6-6m49 6l6-6" stroke="#302c26" stroke-width="3"/>
+  </symbol>
+
+  <symbol id="animal-sheep" viewBox="0 0 64 64">
+    <path d="M15 24c-2-9 9-14 15-9 5-8 17-3 16 5 10-1 13 12 5 17 5 9-8 16-15 10-7 8-20 2-17-8-9-3-11-12-4-15z" fill="#ede6d3" stroke="#39352e" stroke-width="2"/>
+    <path d="M42 24c8-3 14 4 11 12-2 6-10 7-14 2" fill="#51483d"/>
+    <circle cx="49" cy="30" r="1.5" fill="#fff"/>
+  </symbol>
+
+  <symbol id="tile-weed" viewBox="0 0 64 64">
+    <path d="M31 57c1-18-2-29-13-43m14 41c1-21 8-32 19-43M31 47c-5-12-13-17-22-19m24 12c5-11 12-15 21-17" fill="none" stroke="#6b8645" stroke-width="4" stroke-linecap="round"/>
+  </symbol>
+
+  <symbol id="action-water" viewBox="0 0 64 64">
+    <path d="M32 5C27 16 15 28 15 40a17 17 0 0034 0C49 28 37 16 32 5z" fill="#43b6c8" stroke="#163f4a" stroke-width="3"/>
+    <path d="M24 42c2 6 7 8 13 8" fill="none" stroke="#c9f5f4" stroke-width="3" stroke-linecap="round"/>
+  </symbol>
+
+  <symbol id="market-tape" viewBox="0 0 64 64">
+    <path d="M7 51h50M10 44l10-12 9 7 11-20 14 8" fill="none" stroke="#42c2ca" stroke-width="4" stroke-linecap="square" stroke-linejoin="miter"/>
+    <path d="M48 19h8v8" fill="none" stroke="#42c2ca" stroke-width="4"/>
+  </symbol>
+</svg>

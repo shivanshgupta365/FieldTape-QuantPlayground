@@ -1,0 +1,30 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+coverage/
+playwright-report/
+test-results/
+.vercel/
+.supabase/
+*.pyc
+__pycache__/
+launch/rendered/
+
+# Tool scratch / generated output — not source.
+.playwright-cli/
+output/
+videos/**/assets/voice-retimed/
+videos/**/.hyperframes/frame-packets/
+videos/**/compositions/frames/
+videos/**/capture/
+
+# --- Competition boundary: NEVER commit the private agent to this repo. ---
+# This repo is the public FieldTape site. `agent/` is a separate private git
+# repo with its own remote. Kaggle competition rules restrict sharing
+# competitive code, so the two must never share a remote.
+# Enforced twice: ignored here, and hard-rejected by .githooks/pre-commit.
+agent/
+

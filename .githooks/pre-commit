@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Public-repo guard for the FieldTape site.
+#
+# .gitignore already excludes agent/, but gitignore does not protect a path
+# that is already tracked or force-added, and agent/'s own nested .git can be
+# removed. This hook is the backstop.
+#
+# Bypassing this with --no-verify on this repo means publishing private
+# competition code. Don't.
+
+set -euo pipefail
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$staged" ] && exit 0
+
+# --- 1. Private competition code must never enter the public repo. ---
+private=$(printf '%s\n' "$staged" | grep -E '^agent/' || true)
+if [ -n "$private" ]; then
+  echo "BLOCKED: private agent files are staged in the public repo:" >&2
+  printf '  %s\n' $private >&2
+  echo "" >&2
+  echo "agent/ belongs to its own private repo. Unstage with:" >&2
+  echo "  git reset HEAD -- agent/" >&2
+  exit 1
+fi
+
+# --- 2. Real secret values. ---
+# Deliberately matches assigned VALUES, not identifiers. Postgres role names
+# like `service_role` appear legitimately throughout supabase/migrations in
+# GRANT statements; matching the bare word makes this hook useless noise.
+# This hook excludes itself, since its own patterns would self-match.
+scan=$(printf '%s\n' "$staged" | grep -vE '^\.githooks/|\.example$' || true)
+[ -z "$scan" ] && exit 0
+
+added=$(git diff --cached -U0 -- $scan | grep -E '^\+' || true)
+
+# A secret env var assigned something that looks like a real value (>=16 chars
+# of key-ish alphabet), or a JWT, or a PEM private key block.
+secret_re='(KAGGLE_KEY|KAGGLE_USERNAME|SERVICE_ROLE_KEY|SUPABASE_SERVICE_ROLE_KEY)[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9_./+-]{16,}'
+jwt_re='eyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}'
+pem_re='-----BEGIN [A-Z ]*PRIVATE KEY-----'
+
+hits=$(printf '%s\n' "$added" | grep -nE "$secret_re|$jwt_re|$pem_re" || true)
+
+# Drop obvious placeholders.
+hits=$(printf '%s\n' "$hits" \
+  | grep -viE 'your[-_]|example|placeholder|changeme|REPLACE|xxxx|<[a-z-]+>|\.\.\.' || true)
+
+if [ -n "$hits" ]; then
+  echo "BLOCKED: possible real credential in staged content:" >&2
+  printf '%s\n' "$hits" >&2
+  echo "" >&2
+  echo "If this is a false positive, narrow the pattern in .githooks/pre-commit" >&2
+  echo "rather than using --no-verify." >&2
+  exit 1
+fi

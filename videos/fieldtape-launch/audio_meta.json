@@ -1,0 +1,628 @@
+{
+  "bgm": null,
+  "bgm_pending": false,
+  "voices": [
+    {
+      "frame": 1,
+      "path": "assets/voice-retimed/01.wav",
+      "duration_s": 5.565,
+      "words": [
+        {
+          "id": "w0",
+          "text": "720",
+          "start": 0.101,
+          "end": 1.377
+        },
+        {
+          "id": "w1",
+          "text": "moves,",
+          "start": 1.377,
+          "end": 2.261
+        },
+        {
+          "id": "w2",
+          "text": "30",
+          "start": 2.464,
+          "end": 2.957
+        },
+        {
+          "id": "w3",
+          "text": "days,",
+          "start": 2.957,
+          "end": 3.493
+        },
+        {
+          "id": "w4",
+          "text": "one",
+          "start": 3.754,
+          "end": 4
+        },
+        {
+          "id": "w5",
+          "text": "shared",
+          "start": 4,
+          "end": 4.696
+        },
+        {
+          "id": "w6",
+          "text": "market.",
+          "start": 4.696,
+          "end": 5.551
+        }
+      ]
+    },
+    {
+      "frame": 2,
+      "path": "assets/voice-retimed/02.wav",
+      "duration_s": 7.729,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Field",
+          "start": 0.203,
+          "end": 0.536
+        },
+        {
+          "id": "w1",
+          "text": "tape",
+          "start": 0.667,
+          "end": 1.188
+        },
+        {
+          "id": "w2",
+          "text": "turns",
+          "start": 1.188,
+          "end": 1.855
+        },
+        {
+          "id": "w3",
+          "text": "a",
+          "start": 1.884,
+          "end": 1.986
+        },
+        {
+          "id": "w4",
+          "text": "cozy",
+          "start": 1.986,
+          "end": 2.435
+        },
+        {
+          "id": "w5",
+          "text": "farm",
+          "start": 2.609,
+          "end": 3.072
+        },
+        {
+          "id": "w6",
+          "text": "into",
+          "start": 3.072,
+          "end": 3.391
+        },
+        {
+          "id": "w7",
+          "text": "a",
+          "start": 3.391,
+          "end": 3.478
+        },
+        {
+          "id": "w8",
+          "text": "playable",
+          "start": 3.478,
+          "end": 4.623
+        },
+        {
+          "id": "w9",
+          "text": "lesson",
+          "start": 4.623,
+          "end": 4.957
+        },
+        {
+          "id": "w10",
+          "text": "in",
+          "start": 5.565,
+          "end": 5.768
+        },
+        {
+          "id": "w11",
+          "text": "capital",
+          "start": 5.826,
+          "end": 6.522
+        },
+        {
+          "id": "w12",
+          "text": "allocation.",
+          "start": 6.551,
+          "end": 7.652
+        }
+      ]
+    },
+    {
+      "frame": 3,
+      "path": "assets/voice-retimed/03.wav",
+      "duration_s": 7.668,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Planting",
+          "start": 0.116,
+          "end": 1.348
+        },
+        {
+          "id": "w1",
+          "text": "is",
+          "start": 1.348,
+          "end": 1.565
+        },
+        {
+          "id": "w2",
+          "text": "easy.",
+          "start": 1.565,
+          "end": 2.493
+        },
+        {
+          "id": "w3",
+          "text": "Servicing",
+          "start": 2.493,
+          "end": 3.29
+        },
+        {
+          "id": "w4",
+          "text": "every",
+          "start": 3.29,
+          "end": 3.797
+        },
+        {
+          "id": "w5",
+          "text": "tile",
+          "start": 3.797,
+          "end": 4.029
+        },
+        {
+          "id": "w6",
+          "text": "before",
+          "start": 4.58,
+          "end": 4.652
+        },
+        {
+          "id": "w7",
+          "text": "the",
+          "start": 4.812,
+          "end": 4.971
+        },
+        {
+          "id": "w8",
+          "text": "clock",
+          "start": 4.971,
+          "end": 5.478
+        },
+        {
+          "id": "w9",
+          "text": "runs",
+          "start": 5.478,
+          "end": 6.014
+        },
+        {
+          "id": "w10",
+          "text": "out",
+          "start": 6.014,
+          "end": 6.435
+        },
+        {
+          "id": "w11",
+          "text": "is",
+          "start": 6.435,
+          "end": 6.638
+        },
+        {
+          "id": "w12",
+          "text": "the",
+          "start": 6.652,
+          "end": 6.986
+        },
+        {
+          "id": "w13",
+          "text": "trade.",
+          "start": 6.986,
+          "end": 7.87
+        }
+      ]
+    },
+    {
+      "frame": 4,
+      "path": "assets/voice-retimed/04.wav",
+      "duration_s": 7.606,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Harvest",
+          "start": 0.159,
+          "end": 1.116
+        },
+        {
+          "id": "w1",
+          "text": "higher,",
+          "start": 1.116,
+          "end": 2.377
+        },
+        {
+          "id": "w2",
+          "text": "expand.",
+          "start": 2.377,
+          "end": 3.71
+        },
+        {
+          "id": "w3",
+          "text": "Every",
+          "start": 3.87,
+          "end": 4.159
+        },
+        {
+          "id": "w4",
+          "text": "action",
+          "start": 4.217,
+          "end": 4.826
+        },
+        {
+          "id": "w5",
+          "text": "you",
+          "start": 4.826,
+          "end": 5.13
+        },
+        {
+          "id": "w6",
+          "text": "add",
+          "start": 5.13,
+          "end": 5.333
+        },
+        {
+          "id": "w7",
+          "text": "is",
+          "start": 5.333,
+          "end": 5.913
+        },
+        {
+          "id": "w8",
+          "text": "another",
+          "start": 5.913,
+          "end": 6.348
+        },
+        {
+          "id": "w9",
+          "text": "obligation.",
+          "start": 6.348,
+          "end": 7.739
+        }
+      ]
+    },
+    {
+      "frame": 5,
+      "path": "assets/voice-retimed/05.wav",
+      "duration_s": 7.328,
+      "words": [
+        {
+          "id": "w0",
+          "text": "sell",
+          "start": 0.116,
+          "end": 0.406
+        },
+        {
+          "id": "w1",
+          "text": "into",
+          "start": 0.406,
+          "end": 0.797
+        },
+        {
+          "id": "w2",
+          "text": "one",
+          "start": 0.812,
+          "end": 1.116
+        },
+        {
+          "id": "w3",
+          "text": "shared",
+          "start": 1.116,
+          "end": 1.725
+        },
+        {
+          "id": "w4",
+          "text": "market",
+          "start": 1.725,
+          "end": 2.232
+        },
+        {
+          "id": "w5",
+          "text": "and",
+          "start": 2.377,
+          "end": 2.638
+        },
+        {
+          "id": "w6",
+          "text": "price",
+          "start": 2.739,
+          "end": 3.217
+        },
+        {
+          "id": "w7",
+          "text": "moves",
+          "start": 3.217,
+          "end": 3.768
+        },
+        {
+          "id": "w8",
+          "text": "against",
+          "start": 3.768,
+          "end": 4.464
+        },
+        {
+          "id": "w9",
+          "text": "you.",
+          "start": 5.217,
+          "end": 5.246
+        },
+        {
+          "id": "w10",
+          "text": "Timing",
+          "start": 5.362,
+          "end": 5.913
+        },
+        {
+          "id": "w11",
+          "text": "becomes",
+          "start": 5.913,
+          "end": 6.71
+        },
+        {
+          "id": "w12",
+          "text": "risk.",
+          "start": 6.71,
+          "end": 7.493
+        }
+      ]
+    },
+    {
+      "frame": 6,
+      "path": "assets/voice-retimed/06.wav",
+      "duration_s": 7.822,
+      "words": [
+        {
+          "id": "w0",
+          "text": "Behind,",
+          "start": 0.058,
+          "end": 0.884
+        },
+        {
+          "id": "w1",
+          "text": "variance",
+          "start": 0.884,
+          "end": 1.797
+        },
+        {
+          "id": "w2",
+          "text": "can",
+          "start": 1.797,
+          "end": 2.13
+        },
+        {
+          "id": "w3",
+          "text": "save",
+          "start": 2.13,
+          "end": 2.551
+        },
+        {
+          "id": "w4",
+          "text": "you.",
+          "start": 2.551,
+          "end": 3.304
+        },
+        {
+          "id": "w5",
+          "text": "Ahead,",
+          "start": 3.377,
+          "end": 4.072
+        },
+        {
+          "id": "w6",
+          "text": "the",
+          "start": 4.087,
+          "end": 4.42
+        },
+        {
+          "id": "w7",
+          "text": "hard",
+          "start": 4.42,
+          "end": 4.87
+        },
+        {
+          "id": "w8",
+          "text": "season",
+          "start": 4.87,
+          "end": 5.551
+        },
+        {
+          "id": "w9",
+          "text": "wall",
+          "start": 5.551,
+          "end": 5.884
+        },
+        {
+          "id": "w10",
+          "text": "rewards",
+          "start": 6.638,
+          "end": 6.797
+        },
+        {
+          "id": "w11",
+          "text": "control.",
+          "start": 6.797,
+          "end": 8.029
+        }
+      ]
+    },
+    {
+      "frame": 7,
+      "path": "assets/voice-retimed/07.wav",
+      "duration_s": 10.265,
+      "words": [
+        {
+          "id": "w0",
+          "text": "play",
+          "start": 0.116,
+          "end": 0.42
+        },
+        {
+          "id": "w1",
+          "text": "the",
+          "start": 0.522,
+          "end": 0.783
+        },
+        {
+          "id": "w2",
+          "text": "public",
+          "start": 0.783,
+          "end": 1.449
+        },
+        {
+          "id": "w3",
+          "text": "mechanics,",
+          "start": 1.449,
+          "end": 2.522
+        },
+        {
+          "id": "w4",
+          "text": "watch",
+          "start": 2.565,
+          "end": 3.029
+        },
+        {
+          "id": "w5",
+          "text": "a",
+          "start": 3.029,
+          "end": 3.13
+        },
+        {
+          "id": "w6",
+          "text": "synthetic",
+          "start": 3.13,
+          "end": 4.058
+        },
+        {
+          "id": "w7",
+          "text": "season,",
+          "start": 4.058,
+          "end": 5.304
+        },
+        {
+          "id": "w8",
+          "text": "learn",
+          "start": 5.42,
+          "end": 5.884
+        },
+        {
+          "id": "w9",
+          "text": "the",
+          "start": 5.884,
+          "end": 6.217
+        },
+        {
+          "id": "w10",
+          "text": "quant,",
+          "start": 6.348,
+          "end": 7.029
+        },
+        {
+          "id": "w11",
+          "text": "then",
+          "start": 7.029,
+          "end": 7.377
+        },
+        {
+          "id": "w12",
+          "text": "see",
+          "start": 7.377,
+          "end": 7.87
+        },
+        {
+          "id": "w13",
+          "text": "the",
+          "start": 7.87,
+          "end": 8.203
+        },
+        {
+          "id": "w14",
+          "text": "real",
+          "start": 8.203,
+          "end": 8.667
+        },
+        {
+          "id": "w15",
+          "text": "game",
+          "start": 8.667,
+          "end": 9.13
+        },
+        {
+          "id": "w16",
+          "text": "on",
+          "start": 9.13,
+          "end": 9.362
+        },
+        {
+          "id": "w17",
+          "text": "Kaggle.",
+          "start": 9.362,
+          "end": 10.13
+        }
+      ]
+    }
+  ],
+  "sfx": [
+    {
+      "frame": 1,
+      "file": "assets/sfx/impact-bass-1.mp3",
+      "offset_s": 0,
+      "duration_s": 2.12,
+      "volume": 0.35
+    },
+    {
+      "frame": 2,
+      "file": "assets/sfx/whoosh-cinematic.mp3",
+      "offset_s": 0,
+      "duration_s": 5.54,
+      "volume": 0.35
+    },
+    {
+      "frame": 3,
+      "file": "assets/sfx/click-soft.mp3",
+      "offset_s": 0,
+      "duration_s": 0.37,
+      "volume": 0.35
+    },
+    {
+      "frame": 4,
+      "file": "assets/sfx/pop.mp3",
+      "offset_s": 0,
+      "duration_s": 0.72,
+      "volume": 0.35
+    },
+    {
+      "frame": 5,
+      "file": "assets/sfx/notification.mp3",
+      "offset_s": 0,
+      "duration_s": 2.46,
+      "volume": 0.35
+    },
+    {
+      "frame": 6,
+      "file": "assets/sfx/ping.mp3",
+      "offset_s": 0,
+      "duration_s": 1.32,
+      "volume": 0.35
+    },
+    {
+      "frame": 7,
+      "file": "assets/sfx/chime.mp3",
+      "offset_s": 0,
+      "duration_s": 2.5,
+      "volume": 0.35
+    }
+  ]
+}

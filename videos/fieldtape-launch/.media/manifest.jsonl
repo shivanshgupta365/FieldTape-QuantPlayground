@@ -1,0 +1,12 @@
+{"id":"image_001","type":"image","path":"assets/lab-variance-result.png","source":"existing","description":"lab variance result","width":1440,"height":1000,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_002","type":"image","path":"assets/landing-desktop.png","source":"existing","description":"landing desktop","width":1440,"height":4900,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_003","type":"image","path":"assets/play-after-plant.png","source":"existing","description":"play after plant","width":1440,"height":1000,"provenance":{"provider":"local","adopted":true}}
+{"id":"voice_001","type":"voice","path":"assets/voice/01.wav","source":"existing","description":"01","duration":3.8,"provenance":{"provider":"local","adopted":true}}
+{"id":"voice_002","type":"voice","path":"assets/voice/02.wav","source":"existing","description":"02","duration":5.3,"provenance":{"provider":"local","adopted":true}}
+{"id":"voice_003","type":"voice","path":"assets/voice/03.wav","source":"existing","description":"03","duration":5.3,"provenance":{"provider":"local","adopted":true}}
+{"id":"voice_004","type":"voice","path":"assets/voice/04.wav","source":"existing","description":"04","duration":5.2,"provenance":{"provider":"local","adopted":true}}
+{"id":"voice_005","type":"voice","path":"assets/voice/05.wav","source":"existing","description":"05","duration":5.1,"provenance":{"provider":"local","adopted":true}}
+{"id":"voice_006","type":"voice","path":"assets/voice/06.wav","source":"existing","description":"06","duration":5.4,"provenance":{"provider":"local","adopted":true}}
+{"id":"voice_007","type":"voice","path":"assets/voice/07.wav","source":"existing","description":"07","duration":7.1,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_004","type":"image","path":"assets/watch-start.png","source":"existing","description":"watch start","width":1440,"height":1000,"provenance":{"provider":"local","adopted":true}}
+{"id":"image_005","type":"image","path":"assets/watch-terminal.png","source":"existing","description":"watch terminal","width":1440,"height":1000,"provenance":{"provider":"local","adopted":true}}
