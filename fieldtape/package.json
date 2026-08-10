@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "check:public": "node scripts/check-public-boundary.mjs"
+    "check:public": "node scripts/check-public-boundary.mjs",
+    "shoot": "node scripts/shoot.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.55.0",
@@ -38,5 +39,11 @@
     "typescript-eslint": "8.19.1",
     "vite": "6.0.7",
     "vitest": "2.1.8"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }
