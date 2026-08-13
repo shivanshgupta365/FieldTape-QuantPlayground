@@ -113,3 +113,22 @@
 @media (prefers-reduced-motion: reduce) {
   .farm-hit { transition: none; }
 }
+
+/* ---- 3D farm board ---------------------------------------------------- */
+/* Canvas paints; .farm3d-hit-grid on top owns focus, clicks and aria labels. */
+.farm3d-wrap { position: relative; width: 100%; max-width: 720px; aspect-ratio: 1 / 0.86; }
+.farm3d-mount { position: absolute; inset: 0; border-radius: 6px; overflow: hidden; background: #a8c4d2; }
+.farm3d-canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+
+.farm3d-hits { position: absolute; inset: 0; }
+.farm3d-hit {
+  position: absolute;
+  /* Sized to roughly one projected plot and centred on its projected middle. */
+  width: 7.2%; height: 6.4%;
+  transform: translate(-50%, -50%);
+}
+.farm3d-hit { padding: 0; border: 0; background: transparent; cursor: pointer; outline-offset: -2px; border-radius: 3px; }
+.farm3d-hit:disabled { cursor: default; }
+.farm3d-hit:hover:not(:disabled) { background: rgb(245 240 227 / 15%); }
+.farm3d-hit:focus-visible { outline: 2px solid var(--cyan); background: rgb(65 183 186 / 18%); }
+.farm3d-hit.selected { background: rgb(231 167 47 / 16%); }

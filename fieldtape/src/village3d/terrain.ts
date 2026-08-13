@@ -16,12 +16,32 @@
 import * as THREE from "three"
 import { PAL } from "../art/palette"
 
-export const WORLD = 96
-/** World units per terrain quad. Smaller = more triangles, chunkier silhouette. */
-export const QUAD = 1
+/**
+ * Valley size in world units.
+ *
+ * 96 was too small to feel like a place: you crossed it in under a minute and
+ * the far edge was always in view. At 256 the land is about seven times the area
+ * and the horizon is genuinely distant.
+ *
+ * QUAD went 1 -> 2 to keep the triangle budget flat while the map grew: 128x128
+ * quads instead of 96x96, so the mesh is barely larger despite covering seven
+ * times the ground. Coarser quads also suit the pixel look.
+ */
+export const WORLD = 256
+export const QUAD = 2
 export const HALF = WORLD / 2
 
-export type Region = "lake" | "shore" | "village" | "meadow" | "forest" | "orchard" | "ridge"
+export type Region =
+  | "lake"
+  | "shore"
+  | "village"
+  | "meadow"
+  | "forest"
+  | "orchard"
+  | "vineyard"
+  | "highland"
+  | "tarn"
+  | "ridge"
 
 /** Deterministic value noise. Cheap, seamless enough, no dependency. */
 function hash2(x: number, z: number): number {
@@ -63,28 +83,36 @@ function fbm(x: number, z: number, octaves = 4): number {
  * sunset over the water from the village — the view worth walking to.
  */
 function lakeField(x: number, z: number): number {
-  const cx = -30
-  const cz = 34
-  const d = Math.hypot((x - cx) * 0.8, (z - cz) * 1.05)
+  const cx = -64
+  const cz = 78
+  const d = Math.hypot((x - cx) * 0.78, (z - cz) * 1.08)
   // Wobble the shoreline so it is not a circle.
-  return d - (26 + fbm(x * 0.04, z * 0.04, 2) * 10)
+  return d - (58 + fbm(x * 0.02, z * 0.02, 2) * 26)
+}
+
+/** A small high tarn, tucked behind the ridge as a reward for the climb. */
+function tarnField(x: number, z: number): number {
+  const d = Math.hypot((x + 78) * 1.0, (z + 74) * 1.1)
+  return d - (15 + fbm(x * 0.05, z * 0.05, 2) * 5)
 }
 
 export function regionAt(x: number, z: number): Region {
   const lake = lakeField(x, z)
   if (lake < -1.5) return "lake"
-  if (lake < 2.5) return "shore"
+  if (lake < 3.5) return "shore"
+
+  const tarn = tarnField(x, z)
+  if (tarn < 0) return "tarn"
 
   // Village core: a shallow bowl just inland of the lake.
-  const vd = Math.hypot(x - 2, z - 6)
-  if (vd < 15) return "village"
-
-  const orch = Math.hypot(x - 26, z + 6)
-  if (orch < 13) return "orchard"
+  if (Math.hypot(x - 2, z - 6) < 22) return "village"
+  if (Math.hypot(x - 54, z + 10) < 26) return "orchard"
+  if (Math.hypot(x - 30, z + 62) < 28) return "vineyard"
 
   const h = heightAt(x, z)
-  if (h > 15) return "ridge"
-  if (h > 7.5) return "forest"
+  if (h > 40) return "ridge"
+  if (h > 24) return "highland"
+  if (h > 11) return "forest"
   return "meadow"
 }
 
@@ -94,41 +122,56 @@ export function heightAt(x: number, z: number): number {
 
   // Lake bed: a basin, always below zero so water reads as filling a hollow.
   if (lake < 0) {
-    const depth = Math.min(1, -lake / 22)
-    return -1.2 - depth * 4.5
+    const depth = Math.min(1, -lake / 48)
+    return -1.4 - depth * 9
   }
 
   // Base slope rising to the north-east.
-  const slope = (-x * 0.055 + -z * 0.075) * 2.4
+  const slope = (-x * 0.05 + -z * 0.07) * 1.5
 
-  // Ridge mass, held off the village bowl.
-  const ridge = Math.pow(Math.max(0, (-x - z) / 90 + 0.55), 2.1) * 34
+  // Ridge mass, held off the village bowl. Much taller now that the map is big
+  // enough for a climb to take a while.
+  const ridge = Math.pow(Math.max(0, (-x - z) / 210 + 0.52), 2.0) * 96
 
-  // Rolling detail.
-  const roll = (fbm(x * 0.035, z * 0.035, 4) - 0.5) * 7
-  const fine = (fbm(x * 0.12, z * 0.12, 2) - 0.5) * 1.4
+  // Rolling detail at two frequencies.
+  const roll = (fbm(x * 0.016, z * 0.016, 4) - 0.5) * 16
+  const fine = (fbm(x * 0.07, z * 0.07, 2) - 0.5) * 2.4
 
-  let h = 2 + slope + ridge + roll + fine
+  let h = 3 + slope + ridge + roll + fine
 
   // Flatten the village bowl so buildings sit level and streets are walkable.
+  // Damped near the water: flattening the bowl to a fixed 3.0 right up to the
+  // shoreline is what turned the lake edge into a vertical cliff.
   const vd = Math.hypot(x - 2, z - 6)
-  if (vd < 18) {
-    const flat = 1 - Math.min(1, vd / 18)
-    h = h * (1 - flat * 0.88) + 2.6 * (flat * 0.88)
+  if (vd < 26) {
+    const shoreDamp = Math.min(1, Math.max(0, lake) / 26)
+    const flat = (1 - Math.min(1, vd / 26)) * shoreDamp
+    h = h * (1 - flat * 0.9) + 3.0 * (flat * 0.9)
   }
 
-  // Beach easing near the shoreline, so land does not meet water as a cliff.
-  if (lake < 6) {
-    const t = Math.max(0, lake) / 6
-    h = h * t + (-0.6 + t * 1.2) * (1 - t)
+  // Beach easing. Wide, so land wades into the water instead of dropping in.
+  if (lake < 26) {
+    const t = Math.max(0, lake) / 26
+    const eased = t * t * (3 - 2 * t)
+    h = h * eased + (-1.0 + eased * 2.4) * (1 - eased)
   }
 
-  // Terraced orchard: quantise height into steps.
-  const od = Math.hypot(x - 26, z + 6)
-  if (od < 14) {
-    const blend = 1 - Math.min(1, od / 14)
-    const stepped = Math.round(h / 2.2) * 2.2
-    h = h * (1 - blend) + stepped * blend
+  // Terraced orchard and vineyard: quantise height into planting steps.
+  for (const [ox, oz, r] of [[54, -10, 26], [30, 62, 28]] as const) {
+    const od = Math.hypot(x - ox, z - oz)
+    if (od < r) {
+      const blend = 1 - Math.min(1, od / r)
+      const stepped = Math.round(h / 3.0) * 3.0
+      h = h * (1 - blend) + stepped * blend
+    }
+  }
+
+  // Tarn basin: a shallow bowl carved into the highland.
+  const tarn = tarnField(x, z)
+  if (tarn < 8) {
+    const blend = 1 - Math.max(0, tarn) / 8
+    const bowl = 46 - Math.max(0, -tarn) * 0.4
+    h = h * (1 - blend) + bowl * blend
   }
 
   return h
@@ -143,6 +186,9 @@ const REGION_COLOUR: Record<Region, THREE.Color> = {
   meadow: new THREE.Color("#7ba36b"),
   forest: new THREE.Color(PAL.grassDark),
   orchard: new THREE.Color("#86a462"),
+  vineyard: new THREE.Color("#94a05a"),
+  highland: new THREE.Color("#7d8a63"),
+  tarn: new THREE.Color("#4a8296"),
   ridge: new THREE.Color(PAL.stone),
 }
 
@@ -159,8 +205,8 @@ const ROCK = new THREE.Color(PAL.stoneDark)
 function faceColour(x: number, z: number, height: number, slope: number): THREE.Color {
   const base = REGION_COLOUR[regionAt(x, z)].clone()
 
-  if (slope > 0.52) base.lerp(ROCK, Math.min(1, (slope - 0.52) / 0.4))
-  if (height > 19) base.lerp(SNOW, Math.min(1, (height - 19) / 9))
+  if (slope > 0.85) base.lerp(ROCK, Math.min(1, (slope - 0.85) / 0.7))
+  if (height > 52) base.lerp(SNOW, Math.min(1, (height - 52) / 22))
 
   // Deterministic per-face jitter. Uniform colour over thousands of faces looks
   // like plastic; a couple of percent of variation reads as ground.
@@ -178,6 +224,7 @@ export function buildTerrain(): TerrainBuild {
   const segments = WORLD / QUAD
   const positions: number[] = []
   const colours: number[] = []
+  const normals: number[] = []
 
   const c = new THREE.Color()
 
@@ -214,13 +261,26 @@ export function buildTerrain(): TerrainBuild {
       positions.push(x0, h00, z0, x0, h01, z1, x1, h10, z0)
       positions.push(x1, h10, z0, x0, h01, z1, x1, h11, z1)
       for (let k = 0; k < 6; k += 1) colours.push(c.r, c.g, c.b)
+
+      // ONE normal for the whole quad, not one per triangle.
+      //
+      // computeVertexNormals with flatShading gives each triangle its own normal,
+      // so the two halves of every quad catch the light differently and the whole
+      // landscape develops a diagonal herringbone — it looks like corduroy, not
+      // ground. Averaging the quad's plane and writing it to all six vertices
+      // makes each quad a single flat facet, which is also the look we want.
+      const nx = (h00 - h10) * QUAD
+      const nz = (h00 - h01) * QUAD
+      const ny = QUAD * QUAD
+      const len = Math.hypot(nx, ny, nz) || 1
+      for (let k = 0; k < 6; k += 1) normals.push(nx / len, ny / len, nz / len)
     }
   }
 
   const geometry = new THREE.BufferGeometry()
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3))
   geometry.setAttribute("color", new THREE.Float32BufferAttribute(colours, 3))
-  geometry.computeVertexNormals()
+  geometry.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3))
 
   const material = new THREE.MeshLambertMaterial({
     vertexColors: true,

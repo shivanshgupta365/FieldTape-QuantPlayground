@@ -1,7 +1,8 @@
 import { Bot, ChevronRight, CircleHelp, RotateCcw, SkipForward, Target, Wheat } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActionDock, type ActionId } from "../components/ActionDock";
-import { FarmCanvas, type CanvasTile } from "../render/FarmCanvas";
+import { Farm3D } from "../farm3d/Farm3D";
+import type { CanvasTile } from "../farm3d/types";
 import { MarketTape, type MarketQuote } from "../components/MarketTape";
 import { StatStrip } from "../components/StatStrip";
 import {
@@ -139,7 +140,7 @@ export function PlayPage() {
               <div><span>Farm A / decision surface</span><strong>Your desk</strong></div>
               <div className="farm-bank"><span>Bank</span><b>¢{state.farms[0].money.toLocaleString()}</b></div>
             </header>
-            <FarmCanvas label="Your desk" tiles={board} selectedId={selectedId} onSelect={selectTile} />
+            <Farm3D label="Your desk" tiles={board} selectedId={selectedId} onSelect={selectTile} />
           </section>
           <MarketTape quotes={quotes} />
         </section>

@@ -14,7 +14,7 @@
 import { baselineAction, createGame, stepGame } from "../game"
 import type { BaselineStyle, PlayerId } from "../game/types"
 import { canvasTilesFromState } from "../lib/gameView"
-import type { CanvasTile } from "./FarmCanvas"
+import type { CanvasTile } from "../farm3d/types"
 
 const cache = new Map<string, CanvasTile[]>()
 

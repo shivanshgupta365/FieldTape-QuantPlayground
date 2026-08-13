@@ -1,7 +1,7 @@
 import { ArrowRight, BarChart3, Clock3, Github, Play, ShieldCheck, Waves } from "lucide-react";
 import { Link } from "react-router-dom";
 import { BrandMark } from "../components/BrandMark";
-import { FarmCanvas } from "../render/FarmCanvas";
+import { Farm3D } from "../farm3d/Farm3D";
 import { demoFarmTiles } from "../render/demoScene";
 import { LineChart } from "../components/LineChart";
 import { MarketTape } from "../components/MarketTape";
@@ -45,7 +45,7 @@ export function LandingPage() {
               <span>LIVE MODEL / SEED 7301</span>
               <b>DAY 18 <i>·</i> 14:00</b>
             </div>
-            <FarmCanvas label="Farm A" tiles={heroTiles} scale={2} />
+            <Farm3D label="Farm A" tiles={heroTiles} />
             <div className="hero-float-card risk-card"><span>RISK FLAG</span><b>3 dry plots</b><small>8 moves before close</small></div>
             <div className="hero-float-card lead-card"><span>MARK-TO-MARKET LEAD</span><b>+¢1,284</b><small>confidence 71%</small></div>
             <MarketTape compact />

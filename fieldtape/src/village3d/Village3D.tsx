@@ -18,6 +18,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import { DAY_PHASES } from "../art/palette"
 import { ShopInterior, type ShopId, type ShopItem } from "../shops/ShopInterior"
+import { Minimap, type MinimapHandle } from "./Minimap"
 import { HALF, buildTerrain, groundAt, inWater } from "./terrain"
 import {
   buildFarmer,
@@ -56,6 +57,8 @@ export function Village3D() {
   const shopRef = useRef<ShopId | null>(null)
   const promptRef = useRef<string | null>(null)
   const interactRef = useRef<() => void>(() => {})
+  const minimapRef = useRef<MinimapHandle | null>(null)
+  const foundRef = useRef<Set<string>>(new Set())
 
   useEffect(() => { phaseRef.current = phaseIndex }, [phaseIndex])
   useEffect(() => {
@@ -74,7 +77,7 @@ export function Village3D() {
 
     // ---------------------------------------------------------------- scene
     const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(52, 1, 0.5, 400)
+    const camera = new THREE.PerspectiveCamera(56, 1, 0.5, 700)
 
     const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "low-power" })
     renderer.setPixelRatio(1)
@@ -108,7 +111,7 @@ export function Village3D() {
     sun.shadow.mapSize.set(1024, 1024)
     sun.shadow.camera.near = 1
     sun.shadow.camera.far = 220
-    const shadowSpan = 70
+    const shadowSpan = 90
     sun.shadow.camera.left = -shadowSpan
     sun.shadow.camera.right = shadowSpan
     sun.shadow.camera.top = shadowSpan
@@ -164,7 +167,7 @@ export function Village3D() {
     })
 
     // ---------------------------------------------------------------- state
-    const player = { x: 0, z: 12, heading: 0, riding: null as string | null }
+    const player = { x: 4, z: 20, heading: 0, riding: null as string | null }
     // Camera orbit, player-controlled with Q/E or drag.
     const orbit = { yaw: Math.PI * 0.25, pitch: 0.42, distance: 24 }
 
@@ -198,6 +201,7 @@ export function Village3D() {
         (l) => Math.hypot(l.x - player.x, l.z - player.z) < l.radius + 2.6,
       )
       if (!near) return
+      foundRef.current.add(near.id)
       setVisited((v) => (v.includes(near.id) ? v : [...v, near.id]))
       if (near.shop) {
         setOpenShop(near.shop)
@@ -242,7 +246,7 @@ export function Village3D() {
     const onUp = () => { dragging = false }
     const onWheel = (e: WheelEvent) => {
       e.preventDefault()
-      orbit.distance = Math.max(6, Math.min(46, orbit.distance + Math.sign(e.deltaY) * 2))
+      orbit.distance = Math.max(7, Math.min(120, orbit.distance + Math.sign(e.deltaY) * 4))
     }
     renderer.domElement.addEventListener("pointerdown", onDown)
     renderer.domElement.addEventListener("pointermove", onMove)
@@ -268,6 +272,7 @@ export function Village3D() {
     let last = performance.now()
     let running = true
     let clock = 0
+    let minimapAccum = 0
 
     const frame = (now: number) => {
       if (!running) return
@@ -399,6 +404,17 @@ export function Village3D() {
         promptRef.current = next
         setPrompt(next)
       }
+
+      // Minimap redraw is cheap but not free; a few times a second is plenty for
+      // a map and keeps it off the per-frame budget.
+      minimapAccum += dt
+      if (minimapAccum > 0.12) {
+        minimapAccum = 0
+        minimapRef.current?.update(
+          { x: player.x, z: player.z, heading: orbit.yaw },
+          landmarks.map((l) => ({ x: l.x, z: l.z, found: foundRef.current.has(l.id) })),
+        )
+      }
     }
 
     function updateLighting(): void {
@@ -428,7 +444,7 @@ export function Village3D() {
       scene.background = new THREE.Color(phase.sky[1])
       // Fog hides the world edge and gives distance weight. Kept far away so it
       // does not haze the village the player is standing in.
-      scene.fog = new THREE.Fog(phase.sky[1], 78, 210)
+      scene.fog = new THREE.Fog(phase.sky[1], 130, 420)
 
       waterMaterial.color.set(night ? "#1d3448" : "#4d7f96")
     }
@@ -460,7 +476,7 @@ export function Village3D() {
     }
   }, [])
 
-  const total = 10
+  const total = 20
 
   return (
     <div className="v3d-wrap">
@@ -491,6 +507,7 @@ export function Village3D() {
         <div className="v3d-progress">
           Discovered {visited.length} / {total}
         </div>
+        <Minimap handleRef={minimapRef} />
       </div>
 
       {prompt && !openShop && <div className="v3d-prompt" role="status">{prompt}</div>}

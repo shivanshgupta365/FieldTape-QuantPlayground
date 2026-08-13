@@ -185,19 +185,140 @@ function viewpoint(): THREE.Group {
   return g
 }
 
-/** Landmarks, spread far enough apart that reaching one is a short journey. */
+/** Small stone cairn — a waymarker for the long walks. */
+function cairn(): THREE.Group {
+  const g = new THREE.Group()
+  let y = 0
+  for (const r of [0.9, 0.72, 0.55, 0.38]) {
+    const stone = new THREE.Mesh(new THREE.DodecahedronGeometry(r, 0), mat(PAL.stone))
+    stone.position.y = y + r * 0.6
+    stone.castShadow = true
+    g.add(stone)
+    y += r * 1.05
+  }
+  return g
+}
+
+function alpineHut(): THREE.Group {
+  const g = new THREE.Group()
+  g.add(box(3.2, 2.2, 2.8, "#8a6a45"))
+  g.add(gableRoof(4.0, 3.6, 1.8, "#4a4a4a", 2.2))
+  const stack = box(0.4, 1.2, 0.4, PAL.stoneDark, 2.6)
+  stack.position.x = 1.0
+  g.add(stack)
+  return g
+}
+
+function dairy(): THREE.Group {
+  const g = new THREE.Group()
+  g.add(box(5.0, 3.0, 4.0, "#d5d8c8"))
+  g.add(gableRoof(6.0, 5.0, 2.2, "#7a5a3c", 3.0))
+  for (let i = 0; i < 3; i += 1) {
+    const churn = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.46, 1.0, 8), mat(PAL.stoneLight))
+    churn.position.set(-1.4 + i * 1.4, 0.5, 2.6)
+    churn.castShadow = true
+    g.add(churn)
+  }
+  return g
+}
+
+function stoneBridge(): THREE.Group {
+  const g = new THREE.Group()
+  const deck = box(5.0, 0.5, 14.0, PAL.stone, 1.4)
+  g.add(deck)
+  for (const z of [-4.5, 4.5]) {
+    const pier = box(1.2, 3.0, 1.2, PAL.stoneDark)
+    pier.position.z = z
+    g.add(pier)
+  }
+  for (const dx of [-2.3, 2.3]) {
+    const rail = box(0.3, 0.7, 14.0, PAL.stoneLight, 1.9)
+    rail.position.x = dx
+    g.add(rail)
+  }
+  return g
+}
+
+function quarry(): THREE.Group {
+  const g = new THREE.Group()
+  for (let i = 0; i < 7; i += 1) {
+    const r = 0.7 + (i % 3) * 0.5
+    const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(r, 0), mat(i % 2 ? PAL.stone : PAL.stoneDark))
+    rock.position.set(Math.cos(i * 2.1) * 3.4, r * 0.6, Math.sin(i * 1.7) * 3.4)
+    rock.castShadow = true
+    g.add(rock)
+  }
+  const cart = box(1.6, 0.9, 2.4, "#6b4430", 0.4)
+  cart.position.set(3.2, 0, -2.6)
+  g.add(cart)
+  return g
+}
+
+function ruin(): THREE.Group {
+  const g = new THREE.Group()
+  // Broken walls at uneven heights read as ruin far better than a neat box.
+  for (const [dx, dz, h] of [[-2, -2, 3.4], [2, -2, 1.6], [-2, 2, 2.4], [2, 2, 0.9]] as const) {
+    const wall = box(1.0, h, 1.0, PAL.stoneLight)
+    wall.position.set(dx, 0, dz)
+    g.add(wall)
+  }
+  const arch = box(4.6, 0.7, 0.9, PAL.stone, 3.4)
+  arch.position.z = -2
+  g.add(arch)
+  return g
+}
+
+function campfire(): THREE.Group {
+  const g = new THREE.Group()
+  for (let i = 0; i < 6; i += 1) {
+    const stone = new THREE.Mesh(new THREE.DodecahedronGeometry(0.3, 0), mat(PAL.stoneDark))
+    stone.position.set(Math.cos(i * 1.05) * 1.1, 0.18, Math.sin(i * 1.05) * 1.1)
+    g.add(stone)
+  }
+  for (let i = 0; i < 4; i += 1) {
+    const log = box(0.18, 0.18, 1.4, PAL.timberDark, 0.25)
+    log.rotation.y = i * 0.8
+    g.add(log)
+  }
+  const flame = new THREE.Mesh(
+    new THREE.ConeGeometry(0.42, 1.1, 5),
+    new THREE.MeshBasicMaterial({ color: new THREE.Color("#f0913a") }),
+  )
+  flame.position.y = 0.9
+  g.add(flame)
+  return g
+}
+
+/** Landmarks, spread across the whole valley so travel has a purpose. */
 export function buildLandmarks(): Landmark[] {
   const defs: Array<Omit<Landmark, "group"> & { make: () => THREE.Group }> = [
-    { id: "chalet", label: "Your chalet", action: "go inside", x: -4, z: 10, radius: 3.2, make: () => chalet() },
-    { id: "bakery", label: "The bakery", action: "step into the bakery", x: 5, z: 2, radius: 3.0, shop: "bakery", make: () => shopFront("#dcc9a3", PAL.gold, "#a9603c") },
-    { id: "florist", label: "Blumen am See", action: "step into the flower shop", x: -2, z: -1, radius: 3.0, shop: "florist", make: () => shopFront("#d8dcc4", PAL.pink, "#5d8a5a") },
-    { id: "church", label: "The chapel", action: "ring the bell", x: 10, z: 9, radius: 4.0, make: church },
-    { id: "well", label: "The village well", action: "draw water", x: 1, z: 6, radius: 1.8, make: well },
-    { id: "barn", label: "The barn", action: "step into the barn", x: 15, z: 16, radius: 4.0, shop: "barn", make: barn },
-    { id: "mill", label: "The old mill", action: "watch the wheel turn", x: -16, z: 20, radius: 3.0, make: waterwheelMill },
-    { id: "jetty", label: "The jetty", action: "stand at the end of the jetty", x: -22, z: 26, radius: 2.4, make: jetty },
-    { id: "viewpoint", label: "Ridge viewpoint", action: "look out over the valley", x: -30, z: -26, radius: 2.4, make: viewpoint },
-    { id: "orchard", label: "The orchard", action: "pick an apple", x: 26, z: -6, radius: 3.0, make: () => chalet("#cbb894", "#7d5a3c") },
+    // --- Village core
+    { id: "chalet", label: "Your chalet", action: "go inside", x: -6, z: 14, radius: 3.4, make: () => chalet() },
+    { id: "bakery", label: "The bakery", action: "step into the bakery", x: 8, z: 2, radius: 3.2, shop: "bakery", make: () => shopFront("#dcc9a3", PAL.gold, "#a9603c") },
+    { id: "florist", label: "Blumen am See", action: "step into the flower shop", x: -4, z: -3, radius: 3.2, shop: "florist", make: () => shopFront("#d8dcc4", PAL.pink, "#5d8a5a") },
+    { id: "church", label: "The chapel", action: "ring the bell", x: 16, z: 12, radius: 4.2, make: church },
+    { id: "well", label: "The village well", action: "draw water", x: 2, z: 7, radius: 1.9, make: well },
+    { id: "dairy", label: "The cheese dairy", action: "taste the alpkäse", x: -20, z: 2, radius: 3.6, make: dairy },
+
+    // --- Farmland
+    { id: "barn", label: "The barn", action: "step into the barn", x: 26, z: 28, radius: 4.2, shop: "barn", make: barn },
+    { id: "orchard", label: "The orchard", action: "pick an apple", x: 54, z: -10, radius: 3.2, make: () => chalet("#cbb894", "#7d5a3c") },
+    { id: "vineyard", label: "The vineyard hut", action: "rest in the shade", x: 30, z: 62, radius: 3.0, make: alpineHut },
+
+    // --- Lakeside
+    { id: "mill", label: "The old mill", action: "watch the wheel turn", x: -34, z: 40, radius: 3.2, make: waterwheelMill },
+    { id: "jetty", label: "The jetty", action: "stand at the end of the jetty", x: -48, z: 58, radius: 2.6, make: jetty },
+    { id: "bridge", label: "The stone bridge", action: "cross the bridge", x: -18, z: 46, radius: 4.0, make: stoneBridge },
+    { id: "campfire", label: "Lakeside campfire", action: "sit by the fire", x: -66, z: 40, radius: 2.0, make: campfire },
+
+    // --- Highland, a real climb away
+    { id: "viewpoint", label: "Ridge viewpoint", action: "look out over the whole valley", x: -58, z: -52, radius: 2.6, make: viewpoint },
+    { id: "tarn", label: "The high tarn", action: "look into the still water", x: -70, z: -66, radius: 2.4, make: cairn },
+    { id: "hut", label: "The alpine hut", action: "shelter for a moment", x: -40, z: -70, radius: 3.0, make: alpineHut },
+    { id: "ruin", label: "The old watchtower", action: "search the ruin", x: 44, z: -62, radius: 3.4, make: ruin },
+    { id: "quarry", label: "The quarry", action: "look at the cut stone", x: 68, z: 36, radius: 3.8, make: quarry },
+    { id: "cairn_east", label: "East waymarker", action: "add a stone to the cairn", x: 84, z: -18, radius: 1.8, make: cairn },
+    { id: "cairn_south", label: "South waymarker", action: "add a stone to the cairn", x: -8, z: 92, radius: 1.8, make: cairn },
   ]
 
   return defs.map(({ make, ...rest }) => {
@@ -239,7 +360,7 @@ export function buildVegetation(landmarks: Landmark[]): Vegetation {
     return seed / 0x7fffffff
   }
 
-  for (let i = 0; i < 5200; i += 1) {
+  for (let i = 0; i < 26000; i += 1) {
     const x = (rand() * 2 - 1) * (HALF - 2)
     const z = (rand() * 2 - 1) * (HALF - 2)
     const region = regionAt(x, z)
@@ -248,16 +369,25 @@ export function buildVegetation(landmarks: Landmark[]): Vegetation {
     const h = heightAt(x, z)
     if (h < 0.6) continue
     // Treeline: nothing grows on the snow.
-    if (h > 22 && rand() > 0.12) continue
+    if (h > 56 && rand() > 0.1) continue
 
     // Keep clear of landmarks so buildings are never swallowed by forest.
     if (landmarks.some((l) => Math.hypot(l.x - x, l.z - z) < l.radius + 3.5)) continue
 
     const density =
-      region === "forest" ? 0.62 : region === "orchard" ? 0.4 : region === "ridge" ? 0.22 : 0.12
+      region === "forest"
+        ? 0.7
+        : region === "orchard" || region === "vineyard"
+          ? 0.45
+          : region === "highland"
+            ? 0.3
+            : region === "ridge"
+              ? 0.14
+              : 0.14
     if (rand() > density) continue
 
-    const isConifer = region !== "orchard" && (region === "ridge" || rand() < 0.72)
+    const isConifer =
+      region !== "orchard" && region !== "vineyard" && (region !== "meadow" || rand() < 0.72)
     const scale = 0.75 + rand() * 0.7
 
     if (isConifer) {

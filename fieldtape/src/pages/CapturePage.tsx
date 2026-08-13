@@ -12,7 +12,7 @@ import { useEffect, useMemo, useRef } from "react"
 import { ANIMAL_IDS, CROP_IDS, baselineAction, createGame, stepGame } from "../game"
 import type { AnimalId, CropId } from "../game/types"
 import { canvasTilesFromState } from "../lib/gameView"
-import { FarmCanvas } from "../render/FarmCanvas"
+import { Farm3D } from "../farm3d/Farm3D"
 import {
   TILE,
   drawAnimal,
@@ -137,7 +137,7 @@ export function CapturePage() {
       <h2 style={{ color: "#f5f0e3", font: "600 13px ui-monospace, monospace", letterSpacing: ".1em", marginTop: 28 }}>
         MID-SEASON BOARD — day {scene.day} of {scene.config.days}
       </h2>
-      <FarmCanvas label="Preview farm" tiles={canvasTilesFromState(scene, 0)} />
+      <Farm3D label="Preview farm" tiles={canvasTilesFromState(scene, 0)} />
     </main>
   )
 }

@@ -210,3 +210,16 @@
 .v3d-notice button { border: 0; background: none; font-size: 17px; cursor: pointer; line-height: 1; }
 
 @media (max-width: 760px) { .v3d-mount { height: 60vh; } }
+
+/* Minimap sits inside the HUD column but must accept no pointer events. */
+.v3d-minimap { position: relative; pointer-events: none; }
+.v3d-minimap canvas {
+  display: block; image-rendering: pixelated;
+  border: 2px solid rgb(13 20 32 / 78%); border-radius: 8px;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 34%);
+}
+.v3d-minimap span {
+  position: absolute; left: 6px; bottom: 5px;
+  font-size: 9px; letter-spacing: 0.09em; text-transform: uppercase;
+  color: var(--paper-light); text-shadow: 0 1px 2px rgb(0 0 0 / 80%);
+}

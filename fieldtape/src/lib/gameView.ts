@@ -1,6 +1,6 @@
 import type { CropId, GameState, PlayerId } from "../game";
 import { CROP_SPECS, selectPublicFarm } from "../game";
-import type { CanvasTile } from "../render/FarmCanvas";
+import type { CanvasTile } from "../farm3d/types";
 
 /**
  * Growth stage as a fraction of the crop's own maturity, not raw age.
@@ -38,7 +38,6 @@ export function canvasTilesFromState(
       stage: isCrop ? cropStage(content.crop, content.ageDays, content.ready) : 0,
       watered: isCrop ? content.wateredToday : isAnimal ? content.fedToday : true,
       ready: content && "ready" in content ? content.ready : false,
-      worker: null,
     };
   });
 }

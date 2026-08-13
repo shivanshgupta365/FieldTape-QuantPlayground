@@ -1,6 +1,6 @@
 import { Download, Eye, Flag, Radio, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { FarmCanvas } from "../render/FarmCanvas";
+import { Farm3D } from "../farm3d/Farm3D";
 import { LineChart } from "../components/LineChart";
 import { MarketTape, type MarketQuote } from "../components/MarketTape";
 import { ReplayControls } from "../components/ReplayControls";
@@ -69,7 +69,7 @@ export function WatchPage() {
       <MarketTape quotes={quoteView(state)} />
 
       <div className="spectator-stage">
-        <div className="spectator-farms"><section className="farm-shell" aria-label="Farm A"><header><div><span>Farm A / low variance</span><strong>{state.farms[0].name}</strong></div><div className="farm-bank"><span>Bank</span><b>¢{state.farms[0].money.toLocaleString()}</b></div></header><FarmCanvas label={state.farms[0].name} tiles={canvasTilesFromState(state, 0)} scale={2} /></section><div className="town-spine"><span>TOWN TAPE</span><b>DAY {clock.displayDay.toString().padStart(2, "0")}</b><div className="town-buildings">{state.town.unlockedShops.slice(0, 6).map((shop) => <i key={shop} title={shop}>{shop.slice(0, 1)}</i>)}</div><em>{state.town.unlockedShops.length} / 8 shops open</em></div><section className="farm-shell" aria-label="Farm B"><header><div><span>Farm B / convex harvest</span><strong>{state.farms[1].name}</strong></div><div className="farm-bank"><span>Bank</span><b>¢{state.farms[1].money.toLocaleString()}</b></div></header><FarmCanvas label={state.farms[1].name} tiles={canvasTilesFromState(state, 1)} scale={2} /></section></div>
+        <div className="spectator-farms"><section className="farm-shell" aria-label="Farm A"><header><div><span>Farm A / low variance</span><strong>{state.farms[0].name}</strong></div><div className="farm-bank"><span>Bank</span><b>¢{state.farms[0].money.toLocaleString()}</b></div></header><Farm3D label={state.farms[0].name} tiles={canvasTilesFromState(state, 0)} /></section><div className="town-spine"><span>TOWN TAPE</span><b>DAY {clock.displayDay.toString().padStart(2, "0")}</b><div className="town-buildings">{state.town.unlockedShops.slice(0, 6).map((shop) => <i key={shop} title={shop}>{shop.slice(0, 1)}</i>)}</div><em>{state.town.unlockedShops.length} / 8 shops open</em></div><section className="farm-shell" aria-label="Farm B"><header><div><span>Farm B / convex harvest</span><strong>{state.farms[1].name}</strong></div><div className="farm-bank"><span>Bank</span><b>¢{state.farms[1].money.toLocaleString()}</b></div></header><Farm3D label={state.farms[1].name} tiles={canvasTilesFromState(state, 1)} /></section></div>
         <div className="lead-watermark"><span>BANK LEAD</span><strong className={score[0].lead >= 0 ? "cyan" : "gold"}>{score[0].lead >= 0 ? state.farms[0].name : state.farms[1].name}<b> {Math.abs(score[0].lead).toLocaleString()}¢</b></strong></div>
       </div>
 
