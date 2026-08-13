@@ -22,10 +22,12 @@ import { Minimap, type MinimapHandle } from "./Minimap"
 import { HALF, buildTerrain, groundAt, inWater } from "./terrain"
 import {
   buildFarmer,
+  buildHelicopter,
   buildLandmarks,
   buildSheep,
   buildVegetation,
   buildVehicle,
+  buildVillager,
   type Landmark,
 } from "./props"
 
@@ -33,7 +35,17 @@ import {
 const PIXEL = 4
 const WALK = 7.5
 const RUN = 15
-const DRIVE: Record<string, number> = { tractor: 9, pickup: 16, cityCar: 22 }
+const DRIVE: Record<string, number> = { tractor: 9, pickup: 16, cityCar: 22, heli: 30 }
+const LABEL: Record<string, string> = {
+  tractor: "Tractor",
+  pickup: "Pickup",
+  cityCar: "Little car",
+  heli: "Helicopter",
+}
+/** Vertical speed of the helicopter, world units per second. */
+const CLIMB = 16
+/** Ceiling. High enough to clear the summit with room to look down. */
+const MAX_ALTITUDE = 190
 
 interface VehicleState {
   kind: "tractor" | "pickup" | "cityCar"
@@ -51,6 +63,8 @@ export function Village3D() {
   const [purse, setPurse] = useState(140)
   const [phaseIndex, setPhaseIndex] = useState(2)
   const [visited, setVisited] = useState<string[]>([])
+  /** Mirrors player.riding for the HUD. The sim keeps its own mutable copy. */
+  const [vehicle, setVehicle] = useState<string | null>(null)
 
   const keys = useRef<Set<string>>(new Set())
   const phaseRef = useRef(2)
@@ -157,6 +171,47 @@ export function Village3D() {
       return { kind, group, x, z, heading: 0 }
     })
 
+    // Helicopter: parked in the village, the only way onto the summit.
+    const heli = buildHelicopter()
+    // Parked on the village green a short walk from spawn: the helicopter is the
+    // only route to the summit, so it must not be something you fail to find.
+    const heliState = { x: 12, z: 34, heading: 0, altitude: 0 }
+    heli.group.position.set(heliState.x, groundAt(heliState.x, heliState.z), heliState.z)
+    scene.add(heli.group)
+
+    /**
+     * Villagers walking fixed loops.
+     *
+     * Routes are hand-placed rather than pathfound: the village is a known,
+     * hand-built space, so a waypoint loop gives believable movement for a
+     * fraction of the cost and cannot wander into the lake.
+     */
+    interface NpcDef {
+      name: string
+      shirt: string
+      hat: string | null
+      line: string
+      /** Waypoint loop in world coordinates. */
+      route: Array<[number, number]>
+    }
+
+    const NPC_DEFS: NpcDef[] = [
+      { name: "Frau Bühler", shirt: "#d8dcc4", hat: "#d8ac54", line: "The rye came out well today.", route: [[12, 3], [3, 10], [12, 3]] },
+      { name: "Herr Kaufmann", shirt: "#5d8a5a", hat: null, line: "The gentians opened this morning.", route: [[-6, -4], [2, 10], [-24, 3], [-6, -4]] },
+      { name: "Old Anton", shirt: "#8a5a35", hat: "#6b4430", line: "Walked this path forty years. Still steep.", route: [[24, 18], [39, 42], [24, 18]] },
+      { name: "Lena", shirt: "#c9563f", hat: null, line: "Racing you to the jetty. Losing.", route: [[-27, 36], [-51, 60], [-27, 36]] },
+      { name: "The dairyman", shirt: "#dcd3bd", hat: "#a9533c", line: "Alpkäse needs eight months. No shortcuts.", route: [[-30, 3], [-18, 15], [-30, 3]] },
+      { name: "Marta", shirt: "#d78ab4", hat: null, line: "Bread first, then the boat.", route: [[6, 12], [12, 3], [6, 12]] },
+    ]
+
+    const npcs = NPC_DEFS.map((def) => {
+      const group = buildVillager(def.shirt, def.hat)
+      const [sx, sz] = def.route[0]!
+      group.position.set(sx, groundAt(sx, sz), sz)
+      scene.add(group)
+      return { ...def, group, x: sx, z: sz, leg: 0, t: 0 }
+    })
+
     const sheep = Array.from({ length: 14 }, (_, i) => {
       const group = buildSheep()
       const x = 14 + Math.cos(i) * 7
@@ -167,7 +222,13 @@ export function Village3D() {
     })
 
     // ---------------------------------------------------------------- state
-    const player = { x: 4, z: 20, heading: 0, riding: null as string | null }
+    const player = {
+      x: 6,
+      z: 30,
+      heading: 0,
+      riding: null as string | null,
+      altitude: 0,
+    }
     // Camera orbit, player-controlled with Q/E or drag.
     const orbit = { yaw: Math.PI * 0.25, pitch: 0.42, distance: 24 }
 
@@ -189,14 +250,31 @@ export function Village3D() {
         setNotice("You hop down.")
         return
       }
+      if (Math.hypot(heliState.x - player.x, heliState.z - player.z) < 5) {
+        player.riding = "heli"
+        player.altitude = Math.max(player.altitude, 0)
+        setVehicle("Helicopter")
+        setNotice("Helicopter — Space to climb, C to descend, WASD to fly. Land before you get out.")
+        return
+      }
       const nearVehicle = vehicles.find(
         (v) => Math.hypot(v.x - player.x, v.z - player.z) < 3.2,
       )
       if (nearVehicle) {
         player.riding = nearVehicle.kind
-        setNotice(`${nearVehicle.kind} — WASD to drive, E to get out.`)
+        setVehicle(LABEL[nearVehicle.kind] ?? nearVehicle.kind)
+        setNotice(`${LABEL[nearVehicle.kind] ?? nearVehicle.kind} — WASD to drive, F to get out.`)
         return
       }
+      // A villager within earshot takes priority over scenery.
+      const villager = npcs.find(
+        (n) => Math.hypot(n.x - player.x, n.z - player.z) < 3.4,
+      )
+      if (villager) {
+        setNotice(`${villager.name}: “${villager.line}”`)
+        return
+      }
+
       const near = landmarks.find(
         (l) => Math.hypot(l.x - player.x, l.z - player.z) < l.radius + 2.6,
       )
@@ -311,9 +389,17 @@ export function Village3D() {
       if (k.has("q")) orbit.yaw += dt * 1.6
       if (k.has("e")) orbit.yaw -= dt * 1.6
 
+      const flying = player.riding === "heli"
+      if (flying) {
+        if (k.has(" ")) player.altitude = Math.min(MAX_ALTITUDE, player.altitude + CLIMB * dt)
+        if (k.has("c")) player.altitude = Math.max(0, player.altitude - CLIMB * dt)
+      } else {
+        player.altitude = 0
+      }
+
       const mag = Math.hypot(ix, iz)
       const speed = player.riding
-        ? DRIVE[player.riding]!
+        ? DRIVE[player.riding]! * (k.has("shift") ? 1.5 : 1)
         : k.has("shift")
           ? RUN
           : WALK
@@ -328,15 +414,32 @@ export function Village3D() {
 
         const nx = player.x + wx * speed * dt
         const nz = player.z + wz * speed * dt
-        // Separate axes so the player slides along obstacles instead of sticking.
-        if (!blocked(nx, player.z)) player.x = nx
-        if (!blocked(player.x, nz)) player.z = nz
+        if (flying) {
+          // Nothing blocks in the air, but stay inside the world bounds.
+          player.x = Math.max(-HALF + 3, Math.min(HALF - 3, nx))
+          player.z = Math.max(-HALF + 3, Math.min(HALF - 3, nz))
+        } else {
+          // Separate axes so the player slides along obstacles instead of sticking.
+          if (!blocked(nx, player.z)) player.x = nx
+          if (!blocked(player.x, nz)) player.z = nz
+        }
         player.heading = Math.atan2(wx, wz)
       }
 
       const groundY = groundAt(player.x, player.z)
+      const flyY = groundY + player.altitude
 
-      if (player.riding) {
+      if (player.riding === "heli") {
+        heliState.x = player.x
+        heliState.z = player.z
+        heliState.heading = player.heading
+        heliState.altitude = player.altitude
+        heli.group.position.set(player.x, flyY, player.z)
+        heli.group.rotation.y = player.heading
+        // Nose down slightly when moving, the universal visual cue for airspeed.
+        heli.group.rotation.x = mag > 0 ? -0.13 : 0
+        farmer.visible = false
+      } else if (player.riding) {
         const v = vehicles.find((veh) => veh.kind === player.riding)
         if (v) {
           v.x = player.x
@@ -350,6 +453,27 @@ export function Village3D() {
         farmer.visible = true
         farmer.position.set(player.x, groundY, player.z)
         farmer.rotation.y = player.heading
+      }
+
+      // Rotors spin whenever the player is aboard, and idle-spin down otherwise.
+      const spin = player.riding === "heli" ? 26 : 0
+      heli.rotor.rotation.y += spin * dt
+      heli.tail.rotation.x += spin * 1.6 * dt
+
+      // Villagers walk their loops.
+      for (const npc of npcs) {
+        const from = npc.route[npc.leg]!
+        const to = npc.route[(npc.leg + 1) % npc.route.length]!
+        const dist = Math.hypot(to[0] - from[0], to[1] - from[1]) || 1
+        npc.t += (dt * 2.2) / dist
+        if (npc.t >= 1) {
+          npc.t = 0
+          npc.leg = (npc.leg + 1) % npc.route.length
+        }
+        npc.x = from[0] + (to[0] - from[0]) * npc.t
+        npc.z = from[1] + (to[1] - from[1]) * npc.t
+        npc.group.position.set(npc.x, groundAt(npc.x, npc.z), npc.z)
+        npc.group.rotation.y = Math.atan2(to[0] - from[0], to[1] - from[1])
       }
 
       // Sheep wander and shy away from the player.
@@ -375,31 +499,49 @@ export function Village3D() {
 
       // Third-person orbit camera. Lift the look-at point to chest height so the
       // horizon sits naturally rather than at the player's feet.
-      const cx = player.x + Math.sin(orbit.yaw) * Math.cos(orbit.pitch) * orbit.distance
-      const cz = player.z + Math.cos(orbit.yaw) * Math.cos(orbit.pitch) * orbit.distance
-      const cy = groundY + Math.sin(orbit.pitch) * orbit.distance + 2.2
+      // Pull the camera back with altitude, so the valley stays legible from
+      // height instead of the helicopter filling the frame.
+      const flightPullback = flying ? 1 + player.altitude / 90 : 1
+      const dist = orbit.distance * flightPullback
+      const cx = player.x + Math.sin(orbit.yaw) * Math.cos(orbit.pitch) * dist
+      const cz = player.z + Math.cos(orbit.yaw) * Math.cos(orbit.pitch) * dist
+      const cy = flyY + Math.sin(orbit.pitch) * dist + 2.2
       // Only nudge the camera up enough to clear the ground it is over. Snapping
       // it to that ground plus a full clearance — which is what this did first —
       // launches it skyward whenever the orbit swings over the ridge, and the
       // view collapses to a near-vertical top-down.
       const clearance = groundAt(cx, cz) + 1.2
       camera.position.set(cx, cy < clearance ? clearance : cy, cz)
-      camera.lookAt(player.x, groundY + 1.8, player.z)
+      camera.lookAt(player.x, flyY + 1.8, player.z)
 
       // Prompt, pushed to React only when it changes.
       const nearVehicle = vehicles.find(
         (v) => !player.riding && Math.hypot(v.x - player.x, v.z - player.z) < 3.2,
       )
+      const nearHeli =
+        !player.riding && Math.hypot(heliState.x - player.x, heliState.z - player.z) < 5
+      const nearNpc = npcs.find(
+        (n) => !player.riding && Math.hypot(n.x - player.x, n.z - player.z) < 3.4,
+      )
       const near = landmarks.find(
         (l) => Math.hypot(l.x - player.x, l.z - player.z) < l.radius + 2.6,
       )
-      const next = player.riding
-        ? `F — get out of the ${player.riding}`
-        : nearVehicle
-          ? `F — drive the ${nearVehicle.kind}`
-          : near
-            ? `F — ${near.action}`
-            : null
+      const next =
+        player.riding === "heli"
+          ? player.altitude > 2
+            ? `Altitude ${Math.round(player.altitude)}m — C to descend`
+            : "F — get out"
+          : player.riding
+            ? `F — get out of the ${player.riding}`
+            : nearHeli
+              ? "F — fly the helicopter"
+              : nearVehicle
+                ? `F — drive the ${nearVehicle.kind}`
+                : nearNpc
+                  ? `F — talk to ${nearNpc.name}`
+                  : near
+                    ? `F — ${near.action}`
+                    : null
       if (next !== promptRef.current) {
         promptRef.current = next
         setPrompt(next)
@@ -476,7 +618,7 @@ export function Village3D() {
     }
   }, [])
 
-  const total = 20
+  const total = 25
 
   return (
     <div className="v3d-wrap">
@@ -488,6 +630,7 @@ export function Village3D() {
           <span>·</span><kbd>Shift</kbd> run
           <span>·</span><kbd>F</kbd> interact
           <span>·</span><kbd>Q</kbd><kbd>E</kbd> turn
+          <span>·</span><kbd>Space</kbd><kbd>C</kbd> fly
           <span>·</span>drag to look, scroll to zoom
         </div>
         <div className="v3d-time">
@@ -507,6 +650,7 @@ export function Village3D() {
         <div className="v3d-progress">
           Discovered {visited.length} / {total}
         </div>
+        {vehicle && <div className="v3d-vehicle">{vehicle}</div>}
         <Minimap handleRef={minimapRef} />
       </div>
 

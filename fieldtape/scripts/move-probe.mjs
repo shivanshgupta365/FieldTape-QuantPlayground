@@ -1,0 +1,16 @@
+import { chromium } from "@playwright/test";
+import { readFileSync } from "node:fs";
+const b = await chromium.launch({ args: ["--use-gl=angle","--use-angle=swiftshader","--enable-unsafe-swiftshader"] });
+const p = await b.newPage({ viewport: { width: 1000, height: 600 } });
+await p.goto("http://localhost:5173/village", { waitUntil: "networkidle" });
+await p.waitForTimeout(3500);
+await p.locator(".v3d-canvas").click({ position: { x: 500, y: 300 } });
+await p.locator(".v3d-minimap canvas").screenshot({ path: "output/shots/mm-before.png" });
+await p.keyboard.down("d"); await p.waitForTimeout(2000); await p.keyboard.up("d");
+await p.waitForTimeout(600);
+await p.locator(".v3d-minimap canvas").screenshot({ path: "output/shots/mm-after.png" });
+const a = readFileSync("output/shots/mm-before.png");
+const c = readFileSync("output/shots/mm-after.png");
+console.log("minimap changed after pressing D:", a.equals(c) ? "NO — player did not move" : "YES — movement works");
+console.log("document.activeElement:", await p.evaluate(() => document.activeElement?.tagName + "." + document.activeElement?.className));
+await b.close();

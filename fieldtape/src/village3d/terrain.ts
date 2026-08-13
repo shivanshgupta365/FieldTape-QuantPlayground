@@ -19,16 +19,17 @@ import { PAL } from "../art/palette"
 /**
  * Valley size in world units.
  *
- * 96 was too small to feel like a place: you crossed it in under a minute and
- * the far edge was always in view. At 256 the land is about seven times the area
- * and the horizon is genuinely distant.
+ * 96 was too small to feel like a place; 256 was better; 384 is a sandbox. Each
+ * step kept the mesh the same size by coarsening QUAD in step, so the land grows
+ * without the triangle budget growing with it.
  *
  * QUAD went 1 -> 2 to keep the triangle budget flat while the map grew: 128x128
  * quads instead of 96x96, so the mesh is barely larger despite covering seven
  * times the ground. Coarser quads also suit the pixel look.
  */
-export const WORLD = 256
-export const QUAD = 2
+export const WORLD = 384
+// QUAD scales with WORLD so the triangle count stays flat as the land grows.
+export const QUAD = 3
 export const HALF = WORLD / 2
 
 export type Region =
@@ -83,36 +84,36 @@ function fbm(x: number, z: number, octaves = 4): number {
  * sunset over the water from the village — the view worth walking to.
  */
 function lakeField(x: number, z: number): number {
-  const cx = -64
-  const cz = 78
+  const cx = -96
+  const cz = 117
   const d = Math.hypot((x - cx) * 0.78, (z - cz) * 1.08)
   // Wobble the shoreline so it is not a circle.
-  return d - (58 + fbm(x * 0.02, z * 0.02, 2) * 26)
+  return d - (86 + fbm(x * 0.014, z * 0.014, 2) * 38)
 }
 
 /** A small high tarn, tucked behind the ridge as a reward for the climb. */
 function tarnField(x: number, z: number): number {
-  const d = Math.hypot((x + 78) * 1.0, (z + 74) * 1.1)
-  return d - (15 + fbm(x * 0.05, z * 0.05, 2) * 5)
+  const d = Math.hypot((x + 117) * 1.0, (z + 111) * 1.1)
+  return d - (22 + fbm(x * 0.035, z * 0.035, 2) * 7)
 }
 
 export function regionAt(x: number, z: number): Region {
   const lake = lakeField(x, z)
   if (lake < -1.5) return "lake"
-  if (lake < 3.5) return "shore"
+  if (lake < 5) return "shore"
 
   const tarn = tarnField(x, z)
   if (tarn < 0) return "tarn"
 
   // Village core: a shallow bowl just inland of the lake.
-  if (Math.hypot(x - 2, z - 6) < 22) return "village"
-  if (Math.hypot(x - 54, z + 10) < 26) return "orchard"
-  if (Math.hypot(x - 30, z + 62) < 28) return "vineyard"
+  if (Math.hypot(x - 2, z - 6) < 30) return "village"
+  if (Math.hypot(x - 80, z + 15) < 36) return "orchard"
+  if (Math.hypot(x - 45, z + 93) < 38) return "vineyard"
 
   const h = heightAt(x, z)
-  if (h > 40) return "ridge"
-  if (h > 24) return "highland"
-  if (h > 11) return "forest"
+  if (h > 62) return "ridge"
+  if (h > 34) return "highland"
+  if (h > 14) return "forest"
   return "meadow"
 }
 
@@ -122,7 +123,7 @@ export function heightAt(x: number, z: number): number {
 
   // Lake bed: a basin, always below zero so water reads as filling a hollow.
   if (lake < 0) {
-    const depth = Math.min(1, -lake / 48)
+    const depth = Math.min(1, -lake / 70)
     return -1.4 - depth * 9
   }
 
@@ -131,11 +132,11 @@ export function heightAt(x: number, z: number): number {
 
   // Ridge mass, held off the village bowl. Much taller now that the map is big
   // enough for a climb to take a while.
-  const ridge = Math.pow(Math.max(0, (-x - z) / 210 + 0.52), 2.0) * 96
+  const ridge = Math.pow(Math.max(0, (-x - z) / 300 + 0.52), 2.0) * 132
 
   // Rolling detail at two frequencies.
-  const roll = (fbm(x * 0.016, z * 0.016, 4) - 0.5) * 16
-  const fine = (fbm(x * 0.07, z * 0.07, 2) - 0.5) * 2.4
+  const roll = (fbm(x * 0.011, z * 0.011, 4) - 0.5) * 18
+  const fine = (fbm(x * 0.05, z * 0.05, 2) - 0.5) * 2.6
 
   let h = 3 + slope + ridge + roll + fine
 
@@ -143,21 +144,21 @@ export function heightAt(x: number, z: number): number {
   // Damped near the water: flattening the bowl to a fixed 3.0 right up to the
   // shoreline is what turned the lake edge into a vertical cliff.
   const vd = Math.hypot(x - 2, z - 6)
-  if (vd < 26) {
-    const shoreDamp = Math.min(1, Math.max(0, lake) / 26)
-    const flat = (1 - Math.min(1, vd / 26)) * shoreDamp
+  if (vd < 34) {
+    const shoreDamp = Math.min(1, Math.max(0, lake) / 34)
+    const flat = (1 - Math.min(1, vd / 34)) * shoreDamp
     h = h * (1 - flat * 0.9) + 3.0 * (flat * 0.9)
   }
 
   // Beach easing. Wide, so land wades into the water instead of dropping in.
-  if (lake < 26) {
-    const t = Math.max(0, lake) / 26
+  if (lake < 34) {
+    const t = Math.max(0, lake) / 34
     const eased = t * t * (3 - 2 * t)
     h = h * eased + (-1.0 + eased * 2.4) * (1 - eased)
   }
 
   // Terraced orchard and vineyard: quantise height into planting steps.
-  for (const [ox, oz, r] of [[54, -10, 26], [30, 62, 28]] as const) {
+  for (const [ox, oz, r] of [[80, -15, 36], [45, 93, 38]] as const) {
     const od = Math.hypot(x - ox, z - oz)
     if (od < r) {
       const blend = 1 - Math.min(1, od / r)
@@ -168,9 +169,9 @@ export function heightAt(x: number, z: number): number {
 
   // Tarn basin: a shallow bowl carved into the highland.
   const tarn = tarnField(x, z)
-  if (tarn < 8) {
-    const blend = 1 - Math.max(0, tarn) / 8
-    const bowl = 46 - Math.max(0, -tarn) * 0.4
+  if (tarn < 12) {
+    const blend = 1 - Math.max(0, tarn) / 12
+    const bowl = 68 - Math.max(0, -tarn) * 0.4
     h = h * (1 - blend) + bowl * blend
   }
 
@@ -206,7 +207,7 @@ function faceColour(x: number, z: number, height: number, slope: number): THREE.
   const base = REGION_COLOUR[regionAt(x, z)].clone()
 
   if (slope > 0.85) base.lerp(ROCK, Math.min(1, (slope - 0.85) / 0.7))
-  if (height > 52) base.lerp(SNOW, Math.min(1, (height - 52) / 22))
+  if (height > 78) base.lerp(SNOW, Math.min(1, (height - 78) / 30))
 
   // Deterministic per-face jitter. Uniform colour over thousands of faces looks
   // like plastic; a couple of percent of variation reads as ground.

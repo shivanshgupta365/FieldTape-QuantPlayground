@@ -14,6 +14,8 @@ import * as THREE from "three"
 import { PAL } from "../art/palette"
 import { HALF, groundAt, heightAt, regionAt } from "./terrain"
 
+export type VehicleKind = "tractor" | "pickup" | "cityCar" | "heli"
+
 function mat(colour: string): THREE.MeshLambertMaterial {
   return new THREE.MeshLambertMaterial({ color: new THREE.Color(colour), flatShading: true })
 }
@@ -293,32 +295,39 @@ function campfire(): THREE.Group {
 export function buildLandmarks(): Landmark[] {
   const defs: Array<Omit<Landmark, "group"> & { make: () => THREE.Group }> = [
     // --- Village core
-    { id: "chalet", label: "Your chalet", action: "go inside", x: -6, z: 14, radius: 3.4, make: () => chalet() },
-    { id: "bakery", label: "The bakery", action: "step into the bakery", x: 8, z: 2, radius: 3.2, shop: "bakery", make: () => shopFront("#dcc9a3", PAL.gold, "#a9603c") },
-    { id: "florist", label: "Blumen am See", action: "step into the flower shop", x: -4, z: -3, radius: 3.2, shop: "florist", make: () => shopFront("#d8dcc4", PAL.pink, "#5d8a5a") },
-    { id: "church", label: "The chapel", action: "ring the bell", x: 16, z: 12, radius: 4.2, make: church },
-    { id: "well", label: "The village well", action: "draw water", x: 2, z: 7, radius: 1.9, make: well },
-    { id: "dairy", label: "The cheese dairy", action: "taste the alpkäse", x: -20, z: 2, radius: 3.6, make: dairy },
+    { id: "chalet", label: "Your chalet", action: "go inside", x: -9, z: 21, radius: 3.4, make: () => chalet() },
+    { id: "bakery", label: "The bakery", action: "step into the bakery", x: 12, z: 3, radius: 3.2, shop: "bakery", make: () => shopFront("#dcc9a3", PAL.gold, "#a9603c") },
+    { id: "florist", label: "Blumen am See", action: "step into the flower shop", x: -6, z: -4, radius: 3.2, shop: "florist", make: () => shopFront("#d8dcc4", PAL.pink, "#5d8a5a") },
+    { id: "church", label: "The chapel", action: "ring the bell", x: 24, z: 18, radius: 4.2, make: church },
+    { id: "well", label: "The village well", action: "draw water", x: 3, z: 10, radius: 1.9, make: well },
+    { id: "dairy", label: "The cheese dairy", action: "taste the alpkäse", x: -30, z: 3, radius: 3.6, make: dairy },
 
     // --- Farmland
-    { id: "barn", label: "The barn", action: "step into the barn", x: 26, z: 28, radius: 4.2, shop: "barn", make: barn },
-    { id: "orchard", label: "The orchard", action: "pick an apple", x: 54, z: -10, radius: 3.2, make: () => chalet("#cbb894", "#7d5a3c") },
-    { id: "vineyard", label: "The vineyard hut", action: "rest in the shade", x: 30, z: 62, radius: 3.0, make: alpineHut },
+    { id: "barn", label: "The barn", action: "step into the barn", x: 39, z: 42, radius: 4.2, shop: "barn", make: barn },
+    { id: "orchard", label: "The orchard", action: "pick an apple", x: 81, z: -15, radius: 3.2, make: () => chalet("#cbb894", "#7d5a3c") },
+    { id: "vineyard", label: "The vineyard hut", action: "rest in the shade", x: 45, z: 93, radius: 3.0, make: alpineHut },
 
     // --- Lakeside
-    { id: "mill", label: "The old mill", action: "watch the wheel turn", x: -34, z: 40, radius: 3.2, make: waterwheelMill },
-    { id: "jetty", label: "The jetty", action: "stand at the end of the jetty", x: -48, z: 58, radius: 2.6, make: jetty },
-    { id: "bridge", label: "The stone bridge", action: "cross the bridge", x: -18, z: 46, radius: 4.0, make: stoneBridge },
-    { id: "campfire", label: "Lakeside campfire", action: "sit by the fire", x: -66, z: 40, radius: 2.0, make: campfire },
+    { id: "mill", label: "The old mill", action: "watch the wheel turn", x: -51, z: 60, radius: 3.2, make: waterwheelMill },
+    { id: "jetty", label: "The jetty", action: "stand at the end of the jetty", x: -72, z: 87, radius: 2.6, make: jetty },
+    { id: "bridge", label: "The stone bridge", action: "cross the bridge", x: -27, z: 69, radius: 4.0, make: stoneBridge },
+    { id: "campfire", label: "Lakeside campfire", action: "sit by the fire", x: -99, z: 60, radius: 2.0, make: campfire },
 
     // --- Highland, a real climb away
-    { id: "viewpoint", label: "Ridge viewpoint", action: "look out over the whole valley", x: -58, z: -52, radius: 2.6, make: viewpoint },
-    { id: "tarn", label: "The high tarn", action: "look into the still water", x: -70, z: -66, radius: 2.4, make: cairn },
-    { id: "hut", label: "The alpine hut", action: "shelter for a moment", x: -40, z: -70, radius: 3.0, make: alpineHut },
-    { id: "ruin", label: "The old watchtower", action: "search the ruin", x: 44, z: -62, radius: 3.4, make: ruin },
-    { id: "quarry", label: "The quarry", action: "look at the cut stone", x: 68, z: 36, radius: 3.8, make: quarry },
-    { id: "cairn_east", label: "East waymarker", action: "add a stone to the cairn", x: 84, z: -18, radius: 1.8, make: cairn },
-    { id: "cairn_south", label: "South waymarker", action: "add a stone to the cairn", x: -8, z: 92, radius: 1.8, make: cairn },
+    { id: "viewpoint", label: "Ridge viewpoint", action: "look out over the whole valley", x: -87, z: -78, radius: 2.6, make: viewpoint },
+    { id: "tarn", label: "The high tarn", action: "look into the still water", x: -105, z: -99, radius: 2.4, make: cairn },
+    { id: "hut", label: "The alpine hut", action: "shelter for a moment", x: -60, z: -105, radius: 3.0, make: alpineHut },
+    { id: "ruin", label: "The old watchtower", action: "search the ruin", x: 66, z: -93, radius: 3.4, make: ruin },
+    { id: "quarry", label: "The quarry", action: "look at the cut stone", x: 102, z: 54, radius: 3.8, make: quarry },
+    { id: "cairn_east", label: "East waymarker", action: "add a stone to the cairn", x: 126, z: -27, radius: 1.8, make: cairn },
+    { id: "cairn_south", label: "South waymarker", action: "add a stone to the cairn", x: -12, z: 138, radius: 1.8, make: cairn },
+
+    // --- Far reaches, only worth the trip once you have a vehicle
+    { id: "summit", label: "The summit", action: "stand on the roof of the valley", x: -150, z: -150, radius: 3.0, make: cairn },
+    { id: "far_hut", label: "Windward hut", action: "get out of the wind", x: 132, z: -132, radius: 3.0, make: alpineHut },
+    { id: "north_ruin", label: "North watchpost", action: "search the rubble", x: -20, z: -156, radius: 3.2, make: ruin },
+    { id: "east_quarry", label: "East cutting", action: "inspect the cut face", x: 156, z: 60, radius: 3.6, make: quarry },
+    { id: "far_bridge", label: "The high bridge", action: "cross the gorge", x: 60, z: -100, radius: 4.0, make: stoneBridge },
   ]
 
   return defs.map(({ make, ...rest }) => {
@@ -360,16 +369,16 @@ export function buildVegetation(landmarks: Landmark[]): Vegetation {
     return seed / 0x7fffffff
   }
 
-  for (let i = 0; i < 26000; i += 1) {
-    const x = (rand() * 2 - 1) * (HALF - 2)
-    const z = (rand() * 2 - 1) * (HALF - 2)
+  for (let i = 0; i < 52000; i += 1) {
+    const x = (rand() * 2 - 1) * (HALF - 3)
+    const z = (rand() * 2 - 1) * (HALF - 3)
     const region = regionAt(x, z)
     if (region === "lake" || region === "shore" || region === "village") continue
 
     const h = heightAt(x, z)
     if (h < 0.6) continue
     // Treeline: nothing grows on the snow.
-    if (h > 56 && rand() > 0.1) continue
+    if (h > 84 && rand() > 0.1) continue
 
     // Keep clear of landmarks so buildings are never swallowed by forest.
     if (landmarks.some((l) => Math.hypot(l.x - x, l.z - z) < l.radius + 3.5)) continue
@@ -493,6 +502,90 @@ export function buildVehicle(kind: "tractor" | "pickup" | "cityCar"): THREE.Grou
     }
   }
   return g
+}
+
+/**
+ * Villager. Same build as the farmer with a different palette, so NPCs read as
+ * people of the same world rather than a separate art style.
+ */
+export function buildVillager(shirt: string, hat: string | null): THREE.Group {
+  const g = new THREE.Group()
+  g.add(box(0.46, 0.68, 0.3, "#4a4a56"))
+  g.add(box(0.58, 0.7, 0.38, shirt, 0.68))
+  g.add(box(0.4, 0.38, 0.38, "#e8c39a", 1.38))
+  if (hat) {
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.32, 0.16, 8), mat(hat))
+    cap.position.y = 1.78
+    cap.castShadow = true
+    g.add(cap)
+  } else {
+    g.add(box(0.42, 0.14, 0.4, "#5b4029", 1.72))
+  }
+  return g
+}
+
+/**
+ * Helicopter. The only way onto the summit, so it is deliberately parked in the
+ * village where it cannot be missed.
+ *
+ * The rotor is returned separately: it is the one thing in the scene that has to
+ * animate, and reaching into a group by child index to find it every frame is
+ * exactly the kind of coupling that breaks the first time the model changes.
+ */
+export function buildHelicopter(): { group: THREE.Group; rotor: THREE.Object3D; tail: THREE.Object3D } {
+  const g = new THREE.Group()
+
+  const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.85, 1.9, 3, 7), mat("#c9563f"))
+  body.rotation.z = Math.PI / 2
+  body.position.y = 1.5
+  body.castShadow = true
+  g.add(body)
+
+  const glass = new THREE.Mesh(new THREE.SphereGeometry(0.66, 7, 5), mat("#bcd7e2"))
+  glass.position.set(0, 1.6, 1.5)
+  g.add(glass)
+
+  // Tail boom and fin.
+  const boom = box(0.24, 0.24, 2.6, "#a8462f", 1.4)
+  boom.position.z = -2.4
+  g.add(boom)
+  const fin = box(0.12, 0.9, 0.5, "#8f3a26", 1.7)
+  fin.position.z = -3.5
+  g.add(fin)
+
+  // Skids.
+  for (const dx of [-0.7, 0.7]) {
+    const skid = box(0.14, 0.14, 2.6, "#3d3d44", 0.1)
+    skid.position.x = dx
+    g.add(skid)
+    for (const dz of [-0.8, 0.8]) {
+      const strut = box(0.1, 0.6, 0.1, "#3d3d44", 0.2)
+      strut.position.set(dx, 0, dz)
+      g.add(strut)
+    }
+  }
+
+  const rotor = new THREE.Group()
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.24, 6), mat("#3d3d44"))
+  rotor.add(hub)
+  for (let i = 0; i < 4; i += 1) {
+    const blade = box(6.4, 0.08, 0.34, "#2b2b31", -0.04)
+    blade.rotation.y = (i * Math.PI) / 2
+    rotor.add(blade)
+  }
+  rotor.position.y = 2.5
+  g.add(rotor)
+
+  const tail = new THREE.Group()
+  for (let i = 0; i < 2; i += 1) {
+    const blade = box(0.08, 1.3, 0.2, "#2b2b31")
+    blade.rotation.z = (i * Math.PI) / 2
+    tail.add(blade)
+  }
+  tail.position.set(0.2, 1.7, -3.5)
+  g.add(tail)
+
+  return { group: g, rotor, tail }
 }
 
 /** Sheep: a woolly box and a dark head. Instantly legible from any angle. */

@@ -1,133 +1,228 @@
-import { ArrowRight, BarChart3, Clock3, Github, Play, ShieldCheck, Waves } from "lucide-react";
-import { Link } from "react-router-dom";
-import { BrandMark } from "../components/BrandMark";
-import { Farm3D } from "../farm3d/Farm3D";
-import { demoFarmTiles } from "../render/demoScene";
-import { LineChart } from "../components/LineChart";
-import { MarketTape } from "../components/MarketTape";
-import { SectionRule } from "../components/SectionRule";
-import { labs } from "../data/labs";
+/**
+ * Marketing landing page. The first thing anyone sees.
+ *
+ * Imports NOTHING from the 3D renderers. The previous version mounted a live
+ * WebGL board in the hero, which pulled ~120 kB gzip of three.js and a GPU
+ * context onto the most important page in the product before first paint. The
+ * hero art here is inline SVG: a few hundred bytes, renders instantly, and looks
+ * the same in a screenshot.
+ */
 
-const heroTiles = demoFarmTiles({ seed: "alpstead-hero", days: 16, style: "balanced" });
+import { Link } from "react-router-dom"
+import {
+  ArrowRight,
+  CalendarClock,
+  Coins,
+  Mountain,
+  Music,
+  Sprout,
+  TrendingDown,
+  Trophy,
+} from "lucide-react"
+import { BRAND } from "../brand"
+import { BrandMark } from "../components/BrandMark"
+
+/** Static hero scene. Same palette and silhouettes as the game, zero runtime. */
+function HeroArt() {
+  return (
+    <svg className="hero-art" viewBox="0 0 640 360" role="img" aria-label="The Alpstead valley at golden hour">
+      <defs>
+        <linearGradient id="hsky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#5f86ad" />
+          <stop offset="0.55" stopColor="#e2a765" />
+          <stop offset="1" stopColor="#f0d3a4" />
+        </linearGradient>
+      </defs>
+      <rect width="640" height="360" fill="url(#hsky)" />
+      <circle cx="470" cy="96" r="26" fill="#f3c765" />
+
+      {/* Far range with snow, then nearer ridges: the parallax stack, frozen. */}
+      <path d="M0 190 L90 96 L150 150 L210 84 L300 190 Z" fill="#8fa9bd" />
+      <path d="M210 84 L238 128 L224 122 L210 134 L196 122 L182 128 Z" fill="#eef1ef" />
+      <path d="M250 200 L340 110 L430 200 Z" fill="#6d8c9c" />
+      <path d="M340 110 L368 154 L354 148 L340 160 L326 148 L312 154 Z" fill="#eef1ef" />
+      <path d="M400 205 L520 118 L640 205 Z" fill="#55786b" />
+
+      {/* Lake, then the shore and meadow shelves. */}
+      <rect y="205" width="640" height="52" fill="#4d7f96" />
+      <rect y="205" width="640" height="8" fill="#6d9fb2" />
+      <path d="M0 252 L640 244 L640 268 L0 276 Z" fill="#c8b48a" />
+      <rect y="266" width="640" height="94" fill="#7ba36b" />
+      <rect y="266" width="640" height="6" fill="#86ac72" />
+
+      {/* Ploughed strips. */}
+      {[292, 308, 324, 340].map((y) => (
+        <g key={y}>
+          <rect x="0" y={y} width="640" height="9" fill="#6b4430" />
+          <rect x="0" y={y} width="640" height="2" fill="#835540" />
+        </g>
+      ))}
+
+      {/* Chalet and barn, gabled. */}
+      <g>
+        <rect x="86" y="240" width="52" height="34" fill="#dcd3bd" />
+        <path d="M78 240 L112 214 L146 240 Z" fill="#a9533c" />
+        <rect x="96" y="252" width="12" height="12" fill="#f3d98a" />
+        <rect x="118" y="252" width="12" height="12" fill="#f3d98a" />
+      </g>
+      <g>
+        <rect x="470" y="246" width="64" height="30" fill="#8a4032" />
+        <path d="M462 246 L502 222 L542 246 Z" fill="#5a3a2a" />
+        <rect x="492" y="256" width="20" height="20" fill="#f2ede1" />
+      </g>
+
+      {/* Chapel spire, the village silhouette marker. */}
+      <g>
+        <rect x="292" y="236" width="26" height="38" fill="#e2ded1" />
+        <path d="M292 236 L305 196 L318 236 Z" fill="#57707f" />
+        <rect x="303" y="188" width="4" height="10" fill="#e7a72f" />
+      </g>
+
+      {/* Conifers. */}
+      {[30, 208, 386, 610].map((x) => (
+        <g key={x}>
+          <rect x={x + 6} y="258" width="4" height="14" fill="#4a3520" />
+          <path d={`M${x - 6} 258 L${x + 8} 226 L${x + 22} 258 Z`} fill="#2f5232" />
+          <path d={`M${x - 2} 240 L${x + 8} 214 L${x + 18} 240 Z`} fill="#39603a" />
+        </g>
+      ))}
+
+      {/* Tractor and farmer. */}
+      <g>
+        <rect x="200" y="296" width="34" height="14" fill="#c0392b" />
+        <rect x="222" y="286" width="16" height="12" fill="#96271b" />
+        <circle cx="208" cy="312" r="8" fill="#2b2118" />
+        <circle cx="234" cy="314" r="6" fill="#2b2118" />
+      </g>
+      <g>
+        <rect x="352" y="300" width="10" height="14" fill="#3f5d8c" />
+        <rect x="351" y="288" width="12" height="14" fill="#d8dcc4" />
+        <circle cx="357" cy="282" r="6" fill="#e8c39a" />
+        <ellipse cx="357" cy="277" rx="11" ry="4" fill="#d8ac54" />
+      </g>
+
+      {/* Sheep. */}
+      {[418, 442, 462].map((x, i) => (
+        <g key={x}>
+          <ellipse cx={x} cy={318 + i * 4} rx="10" ry="7" fill="#f2ede1" />
+          <rect x={x + 7} y={314 + i * 4} width="7" height="6" fill="#2b2118" />
+        </g>
+      ))}
+    </svg>
+  )
+}
+
+const PILLARS = [
+  {
+    icon: CalendarClock,
+    title: "Thirty days, and they do not wait",
+    body: "A melon needs eleven days before its first unit. Plant one on day 25 and you have set the money on fire. What is optimal on day 3 is not optimal on day 27, and nothing tells you when it flipped.",
+  },
+  {
+    icon: Coins,
+    title: "Your budget is moves, not money",
+    body: "Every worker gets 24 actions a day. Watering one tile is one action. So a single farmer cannot water a full quadrant — not should not, cannot. This is why expanding your farm can make you poorer.",
+  },
+  {
+    icon: TrendingDown,
+    title: "The market moves against you",
+    body: "Prices are not fixed. Every unit you sell pushes that price down, and both farms sell into the same market. Dumping a full shed at once is the most expensive way to sell it.",
+  },
+]
+
+const FEATURES = [
+  { icon: Mountain, label: "A valley to roam", note: "256 units of alpine land, twenty places to find, on foot or by tractor" },
+  { icon: Sprout, label: "A farm to run", note: "Plant, water, harvest, hire, expand — into one shared market" },
+  { icon: Trophy, label: "A board to climb", note: "Full seasons, replayed on the server before they count" },
+  { icon: Music, label: "Sound that never repeats", note: "Five ambient beds, synthesised live in the browser" },
+]
 
 export function LandingPage() {
   return (
     <div className="landing">
       <header className="landing-nav">
-        <BrandMark />
-        <nav aria-label="Landing navigation">
-          <Link to="/watch">Watch a season</Link>
-          <Link to="/lab">Quant labs</Link>
-          <Link to="/story">How it works</Link>
+        <Link to="/" className="landing-brand" aria-label={BRAND.name}>
+          <BrandMark size={34} />
+          <strong>{BRAND.name}</strong>
+        </Link>
+        <nav>
+          <Link to="/how-to-play">How to play</Link>
+          <Link to="/story">About</Link>
+          <Link className="button button-gold" to="/play">
+            Play <ArrowRight size={15} />
+          </Link>
         </nav>
-        <Link className="button button-dark" to="/play">Enter simulation <ArrowRight size={15} /></Link>
       </header>
 
-      <main id="main">
-        <section className="hero-section">
-          <div className="hero-copy">
-            <p className="eyebrow"><span className="live-dot" /> LUCERNE VALLEY · SEASON 01</p>
-            <h1>Every crop<br />is a position.</h1>
-            <p className="hero-dek">A playable capital-allocation game where 720 moves, a hard deadline, and one shared market turn a quiet farm into a strategy desk.</p>
-            <div className="hero-actions">
-              <Link className="button button-gold" to="/play"><Play size={15} fill="currentColor" /> Play the game</Link>
-              <Link className="text-link" to="/watch">Watch the AI season <ArrowRight size={15} /></Link>
-            </div>
-            <dl className="hero-facts">
-              <div><dt>Horizon</dt><dd>30 days</dd></div>
-              <div><dt>Budget</dt><dd>24 moves / day</dd></div>
-              <div><dt>Objective</dt><dd>P(win), not margin</dd></div>
-            </dl>
+      <section className="landing-hero">
+        <div className="hero-copy">
+          <p className="eyebrow">{BRAND.location}</p>
+          <h1>{BRAND.tagline}</h1>
+          <p className="hero-pitch">{BRAND.pitch}</p>
+          <div className="hero-actions">
+            <Link className="button button-gold button-lg" to="/play">
+              Start a season <ArrowRight size={17} />
+            </Link>
+            <Link className="button button-lg" to="/village">
+              Walk the valley first
+            </Link>
           </div>
-
-          <div className="hero-sim" aria-label="Alpstead simulation preview">
-            <div className="hero-sim-top">
-              <span>LIVE MODEL / SEED 7301</span>
-              <b>DAY 18 <i>·</i> 14:00</b>
-            </div>
-            <Farm3D label="Farm A" tiles={heroTiles} />
-            <div className="hero-float-card risk-card"><span>RISK FLAG</span><b>3 dry plots</b><small>8 moves before close</small></div>
-            <div className="hero-float-card lead-card"><span>MARK-TO-MARKET LEAD</span><b>+¢1,284</b><small>confidence 71%</small></div>
-            <MarketTape compact />
-          </div>
-        </section>
-
-        <div className="landing-marquee" aria-label="Core simulation concepts">
-          <span>CAPITAL LOCKUP</span><i>◆</i><span>ACTION BUDGET</span><i>◆</i><span>MARKET IMPACT</span><i>◆</i><span>DURATION</span><i>◆</i><span>WIN PROBABILITY</span>
+          <p className="hero-note">No download. No account needed to play.</p>
         </div>
+        <HeroArt />
+      </section>
 
-        <section className="thesis-section">
-          <SectionRule index="01" label="THE THESIS" value="SIMULATION, NOT ADVICE" />
-          <div className="thesis-grid">
-            <h2>A farm is a portfolio<br />with dirt under its nails.</h2>
-            <div>
-              <p>You deploy limited capital into assets with different lockups, yields, upkeep, and terminal values. Then execution gets in the way.</p>
-              <p>Alpstead makes that machinery visible: cash-flow curves, worker utilization, slippage, and the probability that you finish one coin ahead.</p>
-            </div>
-          </div>
-          <div className="concept-strip">
-            <article><Clock3 /><span>01</span><h3>The clock prices every decision</h3><p>A melon bought late is not cheap. It is worthless.</p></article>
-            <article><Waves /><span>02</span><h3>Your orders move the market</h3><p>The displayed quote is not the price of the whole sale.</p></article>
-            <article><BarChart3 /><span>03</span><h3>Winning changes the objective</h3><p>A one-coin edge pays the same rating outcome as a blowout.</p></article>
-          </div>
-        </section>
+      <section className="landing-hook">
+        <p>
+          Alpstead looks like a farming game. It behaves like a budgeting problem with a
+          deadline.
+        </p>
+      </section>
 
-        <section className="terminal-section">
-          <SectionRule index="02" label="WATCH THE MACHINE" value="SYNTHETIC PUBLIC BASELINES" />
-          <div className="terminal-grid">
-            <div className="terminal-copy">
-              <p className="eyebrow">SPECTATOR MODE</p>
-              <h2>See the decision,<br />not just the score.</h2>
-              <p>Jump to every harvest, hire, land purchase, and lead reversal. Scrub a complete deterministic season without exposing private competition policy.</p>
-              <Link className="button button-outline" to="/watch">Open the tape <ArrowRight size={15} /></Link>
-            </div>
-            <div className="terminal-visual">
-              <header><span>NET COIN CURVE</span><b>DAY 01 → 30</b></header>
-              <LineChart
-                height={260}
-                series={[
-                  { label: "Staple / low variance", color: "#41b7ba", values: [0, -300, -220, 180, 470, 850, 1110, 1430, 1710, 2100, 2520] },
-                  { label: "Premium / high variance", color: "#e7a72f", values: [0, -900, -1060, -980, -430, 520, 1980, 1740, 3020, 2710, 3680] },
-                ]}
-                marker={0.58}
-              />
-              <div className="terminal-readout"><span>LEAD FLIP / DAY 18</span><strong>Premium harvest changes P(win) <b>43% → 68%</b></strong></div>
-            </div>
-          </div>
-        </section>
+      <section className="landing-pillars">
+        {PILLARS.map((p) => (
+          <article key={p.title}>
+            <i aria-hidden="true"><p.icon size={22} /></i>
+            <h2>{p.title}</h2>
+            <p>{p.body}</p>
+          </article>
+        ))}
+      </section>
 
-        <section className="curriculum-section">
-          <SectionRule index="03" label="THE FIELD MANUAL" value={`${labs.length} INTERACTIVE LABS`} />
-          <header><h2>Learn quant ideas<br />by making them fail.</h2><p>Form a hypothesis, change one assumption, run seeded scenarios, and read the post-trade diagnostic.</p></header>
-          <div className="lab-list">
-            {labs.map((lab) => (
-              <Link to={`/lab/${lab.id}`} key={lab.id} className={`lab-row accent-${lab.accent}`}>
-                <span>{lab.number}</span><h3>{lab.title}</h3><p>{lab.concept}</p><ArrowRight size={19} />
-              </Link>
-            ))}
-          </div>
-        </section>
+      <section className="landing-features">
+        <h2>What is in it</h2>
+        <ul>
+          {FEATURES.map((f) => (
+            <li key={f.label}>
+              <i aria-hidden="true"><f.icon size={19} /></i>
+              <div>
+                <strong>{f.label}</strong>
+                <span>{f.note}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-        <section className="proof-section">
-          <div><ShieldCheck size={29} /><strong>Public-safe by construction</strong><span>No private policy, opponent data, or live competition replay payloads.</span></div>
-          <div><Github size={29} /><strong>Deterministic & inspectable</strong><span>Seeded scenarios, exportable notebooks, and public baseline methods.</span></div>
-          <div><BarChart3 size={29} /><strong>A game, not a market</strong><span>Invented crops, invented coins. Nothing here touches a real asset.</span></div>
-        </section>
-
-        <section className="landing-cta">
-          <p className="eyebrow">THE BELL IS ABOUT TO RING</p>
-          <h2>Thirty days.<br />Make every move count.</h2>
-          <Link className="button button-gold" to="/play">Start a season <ArrowRight size={17} /></Link>
-          <small>Runs locally in your browser · no account required</small>
-        </section>
-      </main>
+      <section className="landing-cta">
+        <h2>One valley. Thirty days. One shared market.</h2>
+        <Link className="button button-gold button-lg" to="/play">
+          Enter {BRAND.name} <ArrowRight size={17} />
+        </Link>
+      </section>
 
       <footer className="landing-footer">
-        <BrandMark />
-        <p>Alpstead — a farming game about capital, set above Lake Lucerne.</p>
-        <div><Link to="/learn">How to play</Link><Link to="/story">About</Link></div>
+        <span>
+          {BRAND.name} — {BRAND.tagline}
+        </span>
+        <span className="landing-footer-links">
+          <Link to="/how-to-play">How to play</Link>
+          <Link to="/village">The valley</Link>
+          <Link to="/leaderboard">Leaderboard</Link>
+          <Link to="/story">About</Link>
+        </span>
+        <small>A game, not a market. Invented crops, invented coins.</small>
       </footer>
     </div>
-  );
+  )
 }
-
