@@ -1,6 +1,7 @@
 import { ArrowRight, Lock, Timer, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
-import { GameBoard, makeDemoTiles } from "../components/GameBoard";
+import { FarmCanvas } from "../render/FarmCanvas";
+import { demoFarmTiles } from "../render/demoScene";
 import { PageHeader } from "../components/PageHeader";
 import { SectionRule } from "../components/SectionRule";
 
@@ -17,7 +18,7 @@ export function DailyPage() {
           <div className="daily-rule"><Lock size={15} /><span>The seed and baseline are fixed. One verified score per permanent profile.</span></div>
           <Link className="button button-gold" to="/play?challenge=daily">Enter challenge <ArrowRight size={15} /></Link>
         </section>
-        <div className="daily-board-wrap"><GameBoard label="Challenge state" player="Your desk" coins={4_718} tiles={makeDemoTiles("left", 3).map((tile, index) => ({ ...tile, locked: tile.x > 5 || tile.y > 5, urgent: index === 12 || index === 23 || index === 34 }))} compact /></div>
+        <div className="daily-board-wrap"><FarmCanvas label="Challenge state" tiles={demoFarmTiles({ seed: "fieldtape-daily", days: 12, style: "steady" })} scale={2} /></div>
         <aside className="daily-board"><SectionRule index="B" label="TODAY'S BOARD" /><ol><li><span>01</span><b>grain_alpha</b><em>¢5,884</em></li><li><span>02</span><b>soil_signal</b><em>¢5,796</em></li><li><span>03</span><b>fieldnote</b><em>¢5,642</em></li></ol><Link to="/leaderboard"><Trophy size={14} /> Full leaderboard</Link></aside>
       </div>
     </div>

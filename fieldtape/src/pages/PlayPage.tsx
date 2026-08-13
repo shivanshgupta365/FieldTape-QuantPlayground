@@ -1,7 +1,7 @@
 import { Bot, ChevronRight, CircleHelp, RotateCcw, SkipForward, Target, Wheat } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActionDock, type ActionId } from "../components/ActionDock";
-import { type BoardTile, GameBoard } from "../components/GameBoard";
+import { FarmCanvas, type CanvasTile } from "../render/FarmCanvas";
 import { MarketTape, type MarketQuote } from "../components/MarketTape";
 import { StatStrip } from "../components/StatStrip";
 import {
@@ -21,7 +21,7 @@ import {
   type GameState,
   type ProductId,
 } from "../game";
-import { boardTilesFromState } from "../lib/gameView";
+import { canvasTilesFromState } from "../lib/gameView";
 
 const cropNames: Record<CropId, string> = { WHEAT: "Wheat", CARROT: "Carrot", TOMATO: "Tomato", STRAWBERRY: "Strawberry", MELON: "Melon" };
 const symbols: Record<string, string> = { WHEAT: "WHT", CARROT: "CRT", TOMATO: "TOM", STRAWBERRY: "STR", MELON: "MLN" };
@@ -39,7 +39,7 @@ export function PlayPage() {
   const clock = selectClock(state);
   const score = selectScoreboard(state);
   const metrics = selectFarmMetrics(state, 0);
-  const board = useMemo(() => boardTilesFromState(state, 0, selectedId), [state, selectedId]);
+  const board = useMemo(() => canvasTilesFromState(state, 0), [state]);
   const quotes = useMemo(() => quotesFromState(state), [state]);
   const selected = state.farms[0].tiles.find((tile) => tile.id === selectedId);
 
@@ -90,7 +90,11 @@ export function PlayPage() {
     setNotice("The transparent steady baseline completed the remaining moves for this day.");
   };
 
-  const selectTile = (tile: BoardTile) => { setSelectedId(tile.id); setNotice(tile.crop === "empty" ? `Plot ${tile.x + 1},${tile.y + 1} is empty and ready.` : `${tile.crop} on plot ${tile.x + 1},${tile.y + 1}.`); };
+  const selectTile = (tile: CanvasTile) => {
+    setSelectedId(tile.id);
+    const what = tile.crop ?? tile.animal ?? (tile.weed ? "WEED" : null);
+    setNotice(what ? `${what} on plot ${tile.x + 1},${tile.y + 1}.` : `Plot ${tile.x + 1},${tile.y + 1} is empty and ready.`);
+  };
   const finished = state.status === "finished";
 
   return (
@@ -104,7 +108,13 @@ export function PlayPage() {
 
       <div className="play-layout">
         <section className="play-field">
-          <GameBoard label="Farm A / decision surface" player="Your desk" coins={state.farms[0].money} tiles={board} selectedId={selectedId} onSelect={selectTile} />
+          <section className="farm-shell" aria-label="Your farm">
+            <header>
+              <div><span>Farm A / decision surface</span><strong>Your desk</strong></div>
+              <div className="farm-bank"><span>Bank</span><b>¢{state.farms[0].money.toLocaleString()}</b></div>
+            </header>
+            <FarmCanvas label="Your desk" tiles={board} selectedId={selectedId} onSelect={selectTile} />
+          </section>
           <MarketTape quotes={quotes} />
         </section>
 

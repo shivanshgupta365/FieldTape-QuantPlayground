@@ -1,13 +1,14 @@
 import { ArrowRight, BarChart3, Clock3, Github, Play, ShieldCheck, Waves } from "lucide-react";
 import { Link } from "react-router-dom";
 import { BrandMark } from "../components/BrandMark";
-import { GameBoard, makeDemoTiles } from "../components/GameBoard";
+import { FarmCanvas } from "../render/FarmCanvas";
+import { demoFarmTiles } from "../render/demoScene";
 import { LineChart } from "../components/LineChart";
 import { MarketTape } from "../components/MarketTape";
 import { SectionRule } from "../components/SectionRule";
 import { labs } from "../data/labs";
 
-const heroTiles = makeDemoTiles("left", 2).map((tile, index) => ({ ...tile, locked: index % 10 > 6 || Math.floor(index / 10) > 6 }));
+const heroTiles = demoFarmTiles({ seed: "fieldtape-hero", days: 16, style: "balanced" });
 
 export function LandingPage() {
   return (
@@ -44,7 +45,7 @@ export function LandingPage() {
               <span>LIVE MODEL / SEED 7301</span>
               <b>DAY 18 <i>·</i> 14:00</b>
             </div>
-            <GameBoard label="Farm A" player="You" coins={6_420} tiles={heroTiles} compact />
+            <FarmCanvas label="Farm A" tiles={heroTiles} scale={2} />
             <div className="hero-float-card risk-card"><span>RISK FLAG</span><b>3 dry plots</b><small>8 moves before close</small></div>
             <div className="hero-float-card lead-card"><span>MARK-TO-MARKET LEAD</span><b>+¢1,284</b><small>confidence 71%</small></div>
             <MarketTape compact />

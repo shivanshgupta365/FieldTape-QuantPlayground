@@ -14,3 +14,102 @@
 @media(max-width:1100px){.game-status-bar{grid-template-columns:1fr auto auto}.lead-block{display:none}.play-layout{grid-template-columns:1fr}.play-field{border-right:0;border-bottom:1px solid var(--ink)}.decision-rail{min-height:420px}.decision-rail .stat-strip{grid-template-columns:repeat(4,1fr)}.decision-rail .stat-strip>div{border-bottom:0!important;border-right:1px solid var(--line)!important}.decision-rail .stat-strip>div:last-child{border-right:0!important}.action-dock>button{grid-template-columns:1fr;justify-items:center;text-align:center}.action-dock svg{grid-row:auto}.watch-header{grid-template-columns:1fr}.watch-score{justify-self:start}.watch-diagnostics{grid-template-columns:1fr 1fr}.watch-method{grid-column:1/-1;min-height:180px!important;border-top:1px solid var(--line)}}
 @media(max-width:760px){.play-page,.watch-page{padding:.7rem .6rem 2rem}.game-status-bar{grid-template-columns:1fr auto}.clock-block{padding:0 .5rem;border-right:0}.clock-block i{margin-right:.2rem}.reset-game{display:none}.play-layout{border:0}.play-field{padding:.5rem;border:1px solid var(--ink)}.decision-rail{border:1px solid var(--ink);border-top:0}.decision-rail .stat-strip{grid-template-columns:repeat(2,1fr)}.decision-rail .stat-strip>div:nth-child(2){border-right:0!important}.action-dock{grid-template-columns:repeat(3,1fr)}.action-dock>button{min-height:58px;border-bottom:1px solid var(--line)}.play-command-bar{grid-template-columns:1fr}.pass-action{justify-content:center;min-height:42px}.crop-picker>div{grid-template-columns:1fr 1fr}.watch-score{width:100%}.watch-score section{min-width:0;flex:1}.spectator-farms{grid-template-columns:1fr}.town-spine{display:none}.lead-watermark{top:50%;min-width:170px}.replay-controls{grid-template-columns:1fr}.transport{justify-content:center;border-right:0;border-bottom:1px solid var(--line)}.timeline{grid-template-columns:1fr;padding:.8rem}.timeline>div{grid-template-columns:1fr 1fr;text-align:left}.timeline small{text-align:right}.speed-control{justify-content:center;border-top:1px solid var(--line);border-left:0}.watch-diagnostics{grid-template-columns:1fr}.watch-diagnostics>section,.watch-diagnostics>aside{border-right:0;border-bottom:1px solid var(--line)}.watch-header h1{font-size:3rem}}
 
+
+/* ---- Canvas farm board ------------------------------------------------ */
+/* The canvas paints; .farm-hit-grid sits on top and owns focus and clicks.
+   Keep the wrapper's size driven by inline style from FarmCanvas so the
+   overlay stays aligned to the integer art scale. */
+
+.farm-canvas-wrap {
+  position: relative;
+  flex: none;
+  image-rendering: pixelated;
+}
+
+.farm-canvas {
+  display: block;
+  image-rendering: pixelated;
+  border-radius: 3px;
+}
+
+.farm-hit-grid {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+}
+
+.farm-hit-row {
+  display: flex;
+  flex: 1;
+}
+
+.farm-hit {
+  flex: 1;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  /* Transparent, but must remain hit-testable and focusable. */
+  outline-offset: -2px;
+}
+
+.farm-hit:disabled {
+  cursor: default;
+}
+
+.farm-hit:hover:not(:disabled) {
+  background: rgb(245 240 227 / 18%);
+}
+
+.farm-hit:focus-visible {
+  outline: 2px solid var(--cyan);
+  background: rgb(65 183 186 / 20%);
+}
+
+.farm-hit.selected {
+  background: rgb(231 167 47 / 26%);
+  box-shadow: inset 0 0 0 2px var(--gold);
+}
+
+.farm-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.farm-shell > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  width: 100%;
+  gap: 16px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.farm-shell > header span {
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.farm-shell > header strong {
+  display: block;
+  font-size: 15px;
+}
+
+.farm-shell .farm-bank {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.farm-shell .farm-bank b {
+  font-size: 17px;
+  color: var(--gold);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .farm-hit { transition: none; }
+}

@@ -12,7 +12,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "check:public": "node scripts/check-public-boundary.mjs",
-    "shoot": "node scripts/shoot.mjs"
+    "shoot": "node scripts/shoot.mjs",
+    "shoot:atlas": "node scripts/atlas-shot.mjs",
+    "shoot:board": "node scripts/board-shot.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.55.0",

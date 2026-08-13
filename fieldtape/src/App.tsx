@@ -13,6 +13,12 @@ const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage").then((modul
 const ProfilePage = lazy(() => import("./pages/ProfilePage").then((module) => ({ default: module.ProfilePage })));
 const StoryPage = lazy(() => import("./pages/StoryPage").then((module) => ({ default: module.StoryPage })));
 
+/* Dev-only. import.meta.env.DEV is statically false in a production build, so
+   Rollup drops both the route and the chunk entirely. Verified by check:public. */
+const CapturePage = import.meta.env.DEV
+  ? lazy(() => import("./pages/CapturePage").then((module) => ({ default: module.CapturePage })))
+  : null;
+
 function LoadingTape() {
   return <div className="loading-tape" role="status"><span>FIELDTAPE</span><i /><small>loading deterministic state…</small></div>;
 }
@@ -32,6 +38,7 @@ export function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/story" element={<StoryPage />} />
       </Route>
+      {CapturePage && <Route path="/capture" element={<CapturePage />} />}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes></Suspense>
   );
