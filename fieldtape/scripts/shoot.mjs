@@ -25,7 +25,16 @@ for (const route of ROUTES) {
   const text = (await page.locator("body").innerText()).trim();
   await page.screenshot({ path: `${OUT}/${name}.png`, fullPage: false });
 
-  const status = text.length < 40 ? "BLANK" : "ok";
+  // An access-control interstitial is not the app. Vercel's Deployment
+  // Protection wall is ~244 characters of real text on a page that returns 200,
+  // so a naive length check reports it as a working route — which it did, until
+  // this guard was added.
+  const gated =
+    /vercel\.com\/login|\/sso-api\?|Not signed in with the identity provider|Authentication Required/i.test(
+      text + " " + page.url(),
+    );
+
+  const status = gated ? "GATED" : text.length < 40 ? "BLANK" : "ok";
   console.log(
     `${status.padEnd(6)} ${route.padEnd(14)} ${String(text.length).padStart(5)} chars` +
       (errors.length ? `  ${errors.length} console error(s): ${errors[0].slice(0, 90)}` : ""),
