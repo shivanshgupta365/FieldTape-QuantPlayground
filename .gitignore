@@ -28,3 +28,6 @@ videos/**/capture/
 # Enforced twice: ignored here, and hard-rejected by .githooks/pre-commit.
 agent/
 
+
+# Python venvs anywhere (agent/.venv holds the pinned official environment).
+.venv/
