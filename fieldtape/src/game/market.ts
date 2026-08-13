@@ -83,7 +83,7 @@ export interface MarketSaleResult {
 
 /**
  * Execute a sale unit by unit. The pre-sale quote is paid, matching the public
- * Kaggriculture price convention and making slippage visible to learners.
+ * Alpstead price convention and making slippage visible to learners.
  */
 export function sellIntoMarket(
   market: MarketState,

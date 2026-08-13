@@ -36,7 +36,7 @@ function replayChecksum(replay: Omit<PublicReplayV1, "checksum" | "id">): string
 }
 
 export function generateDemoReplay(
-  seed: number | string = "fieldtape-launch-match",
+  seed: number | string = "alpstead-launch-match",
   players: readonly [BaselineStyle, BaselineStyle] = ["steady", "risk"],
 ): PublicReplayV1 {
   let state = createGame({
@@ -67,9 +67,9 @@ export function generateDemoReplay(
   }
 
   const withoutIdentity: Omit<PublicReplayV1, "checksum" | "id"> = {
-    kind: "fieldtape.public-replay",
+    kind: "alpstead.public-replay",
     version: 1,
-    engineVersion: "fieldtape-engine-v1",
+    engineVersion: "alpstead-engine-v1",
     label: "Duration vs variance — synthetic public baselines",
     synthetic: true,
     seed: state.seed,
@@ -130,9 +130,9 @@ export function validatePublicReplay(value: unknown): ReplayValidation {
     return { ok: false, errors: ["replay must be an object"] }
   }
   const replay = value as Partial<PublicReplayV1>
-  if (replay.kind !== "fieldtape.public-replay") errors.push("unknown replay kind")
+  if (replay.kind !== "alpstead.public-replay") errors.push("unknown replay kind")
   if (replay.version !== 1) errors.push("unsupported replay version")
-  if (replay.engineVersion !== "fieldtape-engine-v1") errors.push("engine mismatch")
+  if (replay.engineVersion !== "alpstead-engine-v1") errors.push("engine mismatch")
   if (replay.synthetic !== true) errors.push("only synthetic public replays are accepted")
   if (!Number.isInteger(replay.seed)) errors.push("seed must be an integer")
   if (!Array.isArray(replay.turns)) errors.push("turns must be an array")
@@ -156,9 +156,9 @@ export function validatePublicReplay(value: unknown): ReplayValidation {
 
   if (typeof replay.checksum === "string" && replay.id && replay.config && replay.players && replay.turns && replay.checkpoints && replay.terminal) {
     const withoutIdentity: Omit<PublicReplayV1, "checksum" | "id"> = {
-      kind: replay.kind as "fieldtape.public-replay",
+      kind: replay.kind as "alpstead.public-replay",
       version: replay.version as 1,
-      engineVersion: replay.engineVersion as "fieldtape-engine-v1",
+      engineVersion: replay.engineVersion as "alpstead-engine-v1",
       label: replay.label ?? "",
       synthetic: replay.synthetic as true,
       seed: replay.seed as number,

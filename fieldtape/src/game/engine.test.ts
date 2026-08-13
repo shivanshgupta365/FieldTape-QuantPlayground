@@ -2,6 +2,7 @@
 
 import { describe, expect, it } from "vitest"
 
+import { MARKET_CURVES } from "./constants"
 import {
   baselineAction,
   createGame,
@@ -12,7 +13,7 @@ import {
   validatePublicReplay,
 } from "./index"
 
-describe("FieldTape deterministic engine", () => {
+describe("Alpstead deterministic engine", () => {
   it("keeps transitions pure and enforces the worker ceiling", () => {
     const initial = createGame({ seed: 11 })
     const next = stepGame(initial, {
@@ -28,11 +29,46 @@ describe("FieldTape deterministic engine", () => {
     expect(next.lastEvents.some((event) => event.title === "Action ceiling reached")).toBe(true)
   })
 
-  it("matches published market anchor examples", () => {
-    expect(marketPriceFromSupply("WHEAT", 10_000)).toBe(25)
-    expect(marketPriceFromSupply("WHEAT", 9_600)).toBe(45)
-    expect(marketPriceFromSupply("CARROT", 10_450)).toBe(10)
-    expect(marketPriceFromSupply("MELON", 10_300)).toBe(1)
+  /**
+   * Properties of our own price curve, not fixed anchors from an outside table.
+   *
+   * This test used to assert specific numbers copied from a third-party
+   * environment, which coupled the public game to that source. Asserting the
+   * curve's shape is both licence-clean and a stronger test: it keeps holding
+   * when the balance table is retuned, which is the whole point of owning it.
+   */
+  it("prices at base when supply sits at equilibrium", () => {
+    for (const product of ["WHEAT", "CARROT", "MELON"] as const) {
+      expect(marketPriceFromSupply(product, MARKET_CURVES[product].equilibrium)).toBe(
+        MARKET_CURVES[product].base,
+      )
+    }
+  })
+
+  it("raises price on scarcity and lowers it on glut", () => {
+    for (const product of ["WHEAT", "CARROT", "MELON"] as const) {
+      const eq = MARKET_CURVES[product].equilibrium
+      const base = MARKET_CURVES[product].base
+      expect(marketPriceFromSupply(product, eq - 400)).toBeGreaterThan(base)
+      expect(marketPriceFromSupply(product, eq + 400)).toBeLessThan(base)
+    }
+  })
+
+  it("never prices below the floor, however large the glut", () => {
+    for (const product of ["WHEAT", "MELON", "WOOL"] as const) {
+      const eq = MARKET_CURVES[product].equilibrium
+      expect(marketPriceFromSupply(product, eq + 500_000)).toBeGreaterThanOrEqual(1)
+    }
+  })
+
+  it("moves monotonically as supply grows", () => {
+    const eq = MARKET_CURVES.WHEAT.equilibrium
+    let previous = Number.POSITIVE_INFINITY
+    for (let supply = eq - 800; supply <= eq + 800; supply += 200) {
+      const price = marketPriceFromSupply("WHEAT", supply)
+      expect(price).toBeLessThanOrEqual(previous)
+      previous = price
+    }
   })
 
   it("repeats a trajectory byte for byte from the same seed", () => {

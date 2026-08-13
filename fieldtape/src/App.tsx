@@ -11,6 +11,8 @@ const ResearchPage = lazy(() => import("./pages/ResearchPage").then((module) => 
 const DailyPage = lazy(() => import("./pages/DailyPage").then((module) => ({ default: module.DailyPage })));
 const LeaderboardPage = lazy(() => import("./pages/LeaderboardPage").then((module) => ({ default: module.LeaderboardPage })));
 const ProfilePage = lazy(() => import("./pages/ProfilePage").then((module) => ({ default: module.ProfilePage })));
+const HowToPlayPage = lazy(() => import("./pages/HowToPlayPage").then((m) => ({ default: m.HowToPlayPage })));
+const VillagePage = lazy(() => import("./pages/VillagePage").then((m) => ({ default: m.VillagePage })));
 const StoryPage = lazy(() => import("./pages/StoryPage").then((module) => ({ default: module.StoryPage })));
 
 /* Dev-only. import.meta.env.DEV is statically false in a production build, so
@@ -20,7 +22,7 @@ const CapturePage = import.meta.env.DEV
   : null;
 
 function LoadingTape() {
-  return <div className="loading-tape" role="status"><span>FIELDTAPE</span><i /><small>loading deterministic state…</small></div>;
+  return <div className="loading-tape" role="status"><span>ALPSTEAD</span><i /><small>loading deterministic state…</small></div>;
 }
 
 export function App() {
@@ -29,6 +31,8 @@ export function App() {
       <Route path="/" element={<LandingPage />} />
       <Route element={<AppShell />}>
         <Route path="/play" element={<PlayPage />} />
+        <Route path="/how-to-play" element={<HowToPlayPage />} />
+        <Route path="/village" element={<VillagePage />} />
         <Route path="/watch" element={<WatchPage />} />
         <Route path="/lab" element={<LabIndexPage />} />
         <Route path="/lab/:moduleId" element={<LabModulePage />} />

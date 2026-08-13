@@ -16,12 +16,12 @@ export type NotebookRecord = {
   updatedAt: string;
 };
 
-class FieldTapeDatabase extends Dexie {
+class AlpsteadDatabase extends Dexie {
   progress!: EntityTable<ProgressRecord, "moduleId">;
   notebooks!: EntityTable<NotebookRecord, "id">;
 
   constructor() {
-    super("fieldtape-local");
+    super("alpstead-local");
     this.version(1).stores({
       progress: "&moduleId, completed, updatedAt",
       notebooks: "&id, updatedAt",
@@ -29,5 +29,5 @@ class FieldTapeDatabase extends Dexie {
   }
 }
 
-export const offlineDb = new FieldTapeDatabase();
+export const offlineDb = new AlpsteadDatabase();
 

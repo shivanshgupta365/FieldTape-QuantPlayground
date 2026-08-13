@@ -22,7 +22,7 @@ const symbols: Record<string, string> = { WHEAT: "WHT", CARROT: "CRT", TOMATO: "
 const quoteView = (state: GameState): MarketQuote[] => selectMarketTape(state).filter((row) => CROP_IDS.includes(row.product as CropId)).map((row) => ({ symbol: symbols[row.product]!, label: row.product, price: row.price, change: row.changePct * 100 }));
 
 export function WatchPage() {
-  const replay = useMemo(() => generateDemoReplay("fieldtape-launch-match", ["steady", "risk"]), []);
+  const replay = useMemo(() => generateDemoReplay("alpstead-launch-match", ["steady", "risk"]), []);
   const [turn, setTurn] = useState(0);
   const [state, setState] = useState(() => replayStateAt(replay, 0));
   const [playing, setPlaying] = useState(false);

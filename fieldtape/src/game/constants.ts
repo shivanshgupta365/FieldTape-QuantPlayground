@@ -36,14 +36,14 @@ export interface MarketCurve {
 
 export type MarketShape = "linear" | "square" | "sqrt" | "log" | "log10"
 
-export const ENGINE_VERSION = "fieldtape-engine-v1" as const
+export const ENGINE_VERSION = "alpstead-engine-v1" as const
 
 export const DEFAULT_GAME_CONFIG: GameConfig = {
   boardSize: 10,
   days: 30,
   turnsPerDay: 24,
-  startingMoney: 3_000,
-  weedSpawnChance: 0.005,
+  startingMoney: 2_500,
+  weedSpawnChance: 0.006,
   maxMarketOrdersPerTurn: 10,
   townShopUnlockInterval: 3,
   townShopSellInterval: 4,
@@ -68,43 +68,58 @@ export const PRODUCT_IDS: ProductId[] = [
   "FERTILIZER",
 ]
 
+/**
+ * Alpstead balance table. These are OUR numbers.
+ *
+ * They are tuned for the shape of the game we want — a real tension between
+ * fast cheap cash flow and slow expensive payoff inside a thirty-day wall — and
+ * are not derived from any third-party source. Change them freely; bump
+ * BRAND.balanceVersion when you do, because saved scores stop being comparable.
+ *
+ * Design intent per crop:
+ *   RYE-fast staple    cheap, quick, thin margin. Pays the bills, wins nothing.
+ *   ROOT               slightly richer staple, one day slower.
+ *   VINE (ongoing)     mid cost, pays a stream once established.
+ *   BERRY (ongoing)    expensive, slow, best total yield if you have the days.
+ *   GOURD              the lottery ticket. Huge unit price, brutal lockup.
+ */
 export const CROP_SPECS: Record<CropId, CropSpec> = {
   WHEAT: {
-    seedCost: 10,
+    seedCost: 12,
     firstYieldDay: 2,
     maxYieldDay: 4,
     interval: 0,
-    maxYield: 6,
+    maxYield: 5,
     ongoing: false,
   },
   CARROT: {
-    seedCost: 20,
-    firstYieldDay: 2,
-    maxYieldDay: 3,
+    seedCost: 24,
+    firstYieldDay: 3,
+    maxYieldDay: 4,
     interval: 0,
-    maxYield: 4,
+    maxYield: 5,
     ongoing: false,
   },
   TOMATO: {
-    seedCost: 50,
-    firstYieldDay: 8,
-    maxYieldDay: 8,
+    seedCost: 55,
+    firstYieldDay: 7,
+    maxYieldDay: 7,
     interval: 1,
-    maxYield: 4,
+    maxYield: 5,
     ongoing: true,
   },
   STRAWBERRY: {
-    seedCost: 100,
-    firstYieldDay: 10,
-    maxYieldDay: 10,
+    seedCost: 110,
+    firstYieldDay: 9,
+    maxYieldDay: 9,
     interval: 2,
-    maxYield: 4,
+    maxYield: 5,
     ongoing: true,
   },
   MELON: {
-    seedCost: 80,
-    firstYieldDay: 10,
-    maxYieldDay: 12,
+    seedCost: 90,
+    firstYieldDay: 11,
+    maxYieldDay: 13,
     interval: 0,
     maxYield: 6,
     ongoing: false,
@@ -112,34 +127,16 @@ export const CROP_SPECS: Record<CropId, CropSpec> = {
 }
 
 export const ANIMAL_SPECS: Record<AnimalId, AnimalSpec> = {
-  GOOSE: {
-    cost: 300,
-    firstYieldDay: 4,
-    interval: 1,
-    maxHeld: 4,
-    product: "EGG",
-  },
-  COW: {
-    cost: 400,
-    firstYieldDay: 8,
-    interval: 2,
-    maxHeld: 6,
-    product: "MILK",
-  },
-  SHEEP: {
-    cost: 500,
-    firstYieldDay: 6,
-    interval: 3,
-    maxHeld: 6,
-    product: "WOOL",
-  },
+  GOOSE: { cost: 280, firstYieldDay: 4, interval: 1, maxHeld: 4, product: "EGG" },
+  COW: { cost: 420, firstYieldDay: 7, interval: 2, maxHeld: 6, product: "MILK" },
+  SHEEP: { cost: 520, firstYieldDay: 6, interval: 3, maxHeld: 6, product: "WOOL" },
 }
 
 const I0 = 10_000
 
 export const MARKET_CURVES: Record<ProductId, MarketCurve> = {
   WHEAT: {
-    base: 25,
+    base: 28,
     equilibrium: I0,
     throughput: 400,
     scarcityShape: "sqrt",
@@ -148,7 +145,7 @@ export const MARKET_CURVES: Record<ProductId, MarketCurve> = {
     glutTarget: 0.2,
   },
   CARROT: {
-    base: 35,
+    base: 38,
     equilibrium: I0,
     throughput: 450,
     scarcityShape: "log",
@@ -157,7 +154,7 @@ export const MARKET_CURVES: Record<ProductId, MarketCurve> = {
     glutTarget: 0.7,
   },
   TOMATO: {
-    base: 60,
+    base: 64,
     equilibrium: I0,
     throughput: 200,
     scarcityShape: "linear",
@@ -166,7 +163,7 @@ export const MARKET_CURVES: Record<ProductId, MarketCurve> = {
     glutTarget: 0.6,
   },
   STRAWBERRY: {
-    base: 120,
+    base: 128,
     equilibrium: I0,
     throughput: 100,
     scarcityShape: "sqrt",
@@ -175,7 +172,7 @@ export const MARKET_CURVES: Record<ProductId, MarketCurve> = {
     glutTarget: 1.6,
   },
   MELON: {
-    base: 250,
+    base: 240,
     equilibrium: I0,
     throughput: 300,
     scarcityShape: "log",
@@ -184,7 +181,7 @@ export const MARKET_CURVES: Record<ProductId, MarketCurve> = {
     glutTarget: 3.6,
   },
   EGG: {
-    base: 50,
+    base: 54,
     equilibrium: I0,
     throughput: 332,
     scarcityShape: "linear",
@@ -193,7 +190,7 @@ export const MARKET_CURVES: Record<ProductId, MarketCurve> = {
     glutTarget: 0.2,
   },
   MILK: {
-    base: 160,
+    base: 150,
     equilibrium: I0,
     throughput: 122,
     scarcityShape: "sqrt",
@@ -202,7 +199,7 @@ export const MARKET_CURVES: Record<ProductId, MarketCurve> = {
     glutTarget: 1.6,
   },
   WOOL: {
-    base: 200,
+    base: 210,
     equilibrium: I0,
     throughput: 105,
     scarcityShape: "log",
@@ -211,7 +208,7 @@ export const MARKET_CURVES: Record<ProductId, MarketCurve> = {
     glutTarget: 3.2,
   },
   FERTILIZER: {
-    base: 100,
+    base: 95,
     equilibrium: I0,
     throughput: 200,
     scarcityShape: "linear",
@@ -222,7 +219,7 @@ export const MARKET_CURVES: Record<ProductId, MarketCurve> = {
 }
 
 export const LAND_ORDER: QuadrantId[] = ["NE", "SW", "SE"]
-export const LAND_PRICES = [1_000, 2_000, 4_000] as const
+export const LAND_PRICES = [900, 2_100, 4_400] as const
 
 export const SHOP_PRODUCTS: Record<ShopId, ProductId[]> = {
   BAKERY: ["EGG", "WHEAT"],

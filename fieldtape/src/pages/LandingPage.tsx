@@ -8,7 +8,7 @@ import { MarketTape } from "../components/MarketTape";
 import { SectionRule } from "../components/SectionRule";
 import { labs } from "../data/labs";
 
-const heroTiles = demoFarmTiles({ seed: "fieldtape-hero", days: 16, style: "balanced" });
+const heroTiles = demoFarmTiles({ seed: "alpstead-hero", days: 16, style: "balanced" });
 
 export function LandingPage() {
   return (
@@ -26,7 +26,7 @@ export function LandingPage() {
       <main id="main">
         <section className="hero-section">
           <div className="hero-copy">
-            <p className="eyebrow"><span className="live-dot" /> UNOFFICIAL PUBLIC LAB · SEASON 01</p>
+            <p className="eyebrow"><span className="live-dot" /> LUCERNE VALLEY · SEASON 01</p>
             <h1>Every crop<br />is a position.</h1>
             <p className="hero-dek">A playable capital-allocation game where 720 moves, a hard deadline, and one shared market turn a quiet farm into a strategy desk.</p>
             <div className="hero-actions">
@@ -40,7 +40,7 @@ export function LandingPage() {
             </dl>
           </div>
 
-          <div className="hero-sim" aria-label="FieldTape simulation preview">
+          <div className="hero-sim" aria-label="Alpstead simulation preview">
             <div className="hero-sim-top">
               <span>LIVE MODEL / SEED 7301</span>
               <b>DAY 18 <i>·</i> 14:00</b>
@@ -62,7 +62,7 @@ export function LandingPage() {
             <h2>A farm is a portfolio<br />with dirt under its nails.</h2>
             <div>
               <p>You deploy limited capital into assets with different lockups, yields, upkeep, and terminal values. Then execution gets in the way.</p>
-              <p>FieldTape makes that machinery visible: cash-flow curves, worker utilization, slippage, and the probability that you finish one coin ahead.</p>
+              <p>Alpstead makes that machinery visible: cash-flow curves, worker utilization, slippage, and the probability that you finish one coin ahead.</p>
             </div>
           </div>
           <div className="concept-strip">
@@ -111,7 +111,7 @@ export function LandingPage() {
         <section className="proof-section">
           <div><ShieldCheck size={29} /><strong>Public-safe by construction</strong><span>No private policy, opponent data, or live competition replay payloads.</span></div>
           <div><Github size={29} /><strong>Deterministic & inspectable</strong><span>Seeded scenarios, exportable notebooks, and public baseline methods.</span></div>
-          <div><BarChart3 size={29} /><strong>Educational, not financial</strong><span>Simulation concepts only. No real assets and no investment advice.</span></div>
+          <div><BarChart3 size={29} /><strong>A game, not a market</strong><span>Invented crops, invented coins. Nothing here touches a real asset.</span></div>
         </section>
 
         <section className="landing-cta">
@@ -124,8 +124,8 @@ export function LandingPage() {
 
       <footer className="landing-footer">
         <BrandMark />
-        <p>An unofficial educational project inspired by Kaggle’s Kaggriculture simulation.</p>
-        <div><Link to="/story">Methods</Link><a href="https://www.kaggle.com/competitions/kaggriculture" rel="noreferrer" target="_blank">Official competition ↗</a></div>
+        <p>Alpstead — a farming game about capital, set above Lake Lucerne.</p>
+        <div><Link to="/learn">How to play</Link><Link to="/story">About</Link></div>
       </footer>
     </div>
   );

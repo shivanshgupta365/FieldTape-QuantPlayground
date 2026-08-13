@@ -24,7 +24,7 @@ export function demoFarmTiles(options?: {
   style?: BaselineStyle
   playerId?: PlayerId
 }): CanvasTile[] {
-  const seed = options?.seed ?? "fieldtape-hero"
+  const seed = options?.seed ?? "alpstead-hero"
   const days = options?.days ?? 15
   const style = options?.style ?? "steady"
   const playerId = options?.playerId ?? 0

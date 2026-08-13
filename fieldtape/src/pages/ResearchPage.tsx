@@ -44,11 +44,11 @@ export function ResearchPage() {
   };
 
   const exportRun = () => {
-    const payload = { schema: "FieldTapeNotebookV1", createdAt: new Date().toISOString(), hypothesis, parameters: scenario, diagnostics: { terminal, drawdown, utilization }, series };
+    const payload = { schema: "AlpsteadNotebookV1", createdAt: new Date().toISOString(), hypothesis, parameters: scenario, diagnostics: { terminal, drawdown, utilization }, series };
     const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = "fieldtape-notebook.json";
+    link.download = "alpstead-notebook.json";
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -90,7 +90,7 @@ export function ResearchPage() {
           <div className="output-actions"><button onClick={save}>{saved ? <Plus size={15} /> : <Save size={15} />}{saved ? "Saved to local notes" : "Save run"}</button><button onClick={exportRun}><Download size={15} /> Export JSON</button></div>
         </section>
       </div>
-      <p className="model-caveat">MODEL NOTE — Paths are deterministic educational approximations, not forecasts. Public baseline mechanics only.</p>
+      <p className="model-caveat">Curves are deterministic projections from the current balance table, not predictions about your season.</p>
     </div>
   );
 }

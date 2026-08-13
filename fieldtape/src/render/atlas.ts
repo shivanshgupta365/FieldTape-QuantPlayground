@@ -4,9 +4,8 @@
  * Original art, generated as code. Three reasons it is drawn rather than
  * shipped as a PNG:
  *
- *  1. Licensing. FieldTape is a public, unofficial project tied to a
- *     competition with sharing rules. Generated art has no third-party terms
- *     and cannot be mistaken for Kaggle's own sprites.
+ *  1. Ownership. Every sprite is ours outright, with no third-party asset
+ *     licence to honour and nothing to re-clear before shipping commercially.
  *  2. Determinism. Every pixel is a pure function of tile coordinates, so two
  *     renders of the same replay frame are byte-identical. Texture noise comes
  *     from the engine's seeded PRNG, never Math.random.

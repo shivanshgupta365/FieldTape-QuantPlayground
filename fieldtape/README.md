@@ -1,35 +1,37 @@
-# FieldTape for Kaggriculture
+# Alpstead
 
-FieldTape is an unofficial, public-safe browser simulation and quant-learning lab inspired by the public mechanics of Kaggle's Kaggriculture competition.
+**Farm the valley. Read the market.**
 
-## Run locally
+A cozy alpine farm above Lake Lucerne, where every seed is a bet and thirty days
+is the whole season. Plant, water, harvest, hire, expand — into a shared market
+that moves against you every time you sell into it.
+
+Alpstead is an original game. Its engine, balance table, art and audio are all
+its own.
+
+## Run
 
 ```bash
 pnpm install
 pnpm dev
 ```
 
-The product works without a backend. Optional Supabase values can be copied from `.env.example` to `.env.local` to enable sync and verified daily challenges.
-
-## Validate
+## Verify
 
 ```bash
 pnpm lint
 pnpm test
 pnpm build
 pnpm check:public
-pnpm exec playwright test
 ```
 
-## Public-safety boundary
+## Structure
 
-The site imports only `src/game`, a transparent educational engine and public baseline implementation. It does not import the private `../agent` workspace. Production source maps are disabled, `/capture` is not registered in the production router, and `check:public` scans for private paths, credential markers, and unsafe artifacts.
-
-`PublicReplayV1` accepts only synthetic baseline matches and rejects known private-state and policy fields. Real competition matches should be viewed through Kaggle's official replay UI.
-
-## Attribution
-
-FieldTape's browser engine and visual system are original. Mechanics were checked against the public Kaggriculture environment in [Kaggle's `kaggle-environments` repository](https://github.com/Kaggle/kaggle-environments/tree/master/kaggle_environments/envs/kaggriculture), licensed under Apache-2.0. See `src/game/README.md` and `public/game/ATTRIBUTION.md` for scope.
-
-Kaggle and Kaggriculture are marks of their respective owners. This project is unofficial, uses fictional coins and crops, and is educational—not investment advice.
-
+| Path | What |
+| --- | --- |
+| `src/game/` | Deterministic engine and balance table |
+| `src/render/` | Canvas sprite atlas and farm renderer |
+| `src/village/` | 2.5D village map, movement, vehicles |
+| `src/audio/` | Procedural ambient music engine |
+| `src/pages/` | Routes |
+| `supabase/` | Auth, profiles, leaderboard |

@@ -9,7 +9,7 @@ export interface EngineSelfTestReport {
 }
 
 function assert(condition: unknown, message: string): asserts condition {
-  if (!condition) throw new Error(`FieldTape engine self-test failed: ${message}`)
+  if (!condition) throw new Error(`Alpstead engine self-test failed: ${message}`)
 }
 
 export function runEngineSelfTest(): EngineSelfTestReport {

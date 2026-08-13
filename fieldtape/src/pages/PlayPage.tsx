@@ -31,7 +31,7 @@ function quotesFromState(state: GameState): MarketQuote[] {
 }
 
 export function PlayPage() {
-  const [state, setState] = useState(() => createGame({ seed: "fieldtape-player-7301", playerNames: ["Your desk", "Public baseline"] }));
+  const [state, setState] = useState(() => createGame({ seed: "alpstead-player-7301", playerNames: ["Your desk", "Public baseline"] }));
   const [selectedId, setSelectedId] = useState<string>();
   const [active, setActive] = useState<ActionId>();
   const [notice, setNotice] = useState("Select a plot, then commit one action. Every order advances the shared clock.");
@@ -103,7 +103,7 @@ export function PlayPage() {
         <div className="game-mode"><span>PLAY / HUMAN VS PUBLIC BASELINE</span><strong>SEED {state.seed.toString(16).toUpperCase()}</strong></div>
         <div className="clock-block"><span>DAY</span><b>{clock.displayDay.toString().padStart(2, "0")}</b><i>/ 30</i><span>TURN</span><b>{clock.hour.toString().padStart(2, "0")}</b><i>/ 24</i></div>
         <div className="lead-block"><span>BANK LEAD</span><b className={score[0].lead >= 0 ? "positive" : "negative"}>{score[0].lead >= 0 ? "+" : ""}¢{score[0].lead.toLocaleString()}</b><small>margin shown; outcome is W/L/tie</small></div>
-        <button className="reset-game" onClick={() => { setState(createGame({ seed: "fieldtape-player-7301", playerNames: ["Your desk", "Public baseline"] })); setSelectedId(undefined); }}><RotateCcw size={14} /> Restart</button>
+        <button className="reset-game" onClick={() => { setState(createGame({ seed: "alpstead-player-7301", playerNames: ["Your desk", "Public baseline"] })); setSelectedId(undefined); }}><RotateCcw size={14} /> Restart</button>
       </header>
 
       <div className="play-layout">

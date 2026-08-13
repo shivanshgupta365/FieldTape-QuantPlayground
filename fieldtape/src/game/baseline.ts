@@ -99,7 +99,7 @@ function marketOrders(
 
 /**
  * A transparent public baseline. It is intentionally small and inspectable;
- * FieldTape never imports the private competition agent or its parameters.
+ * Alpstead never imports the private competition agent or its parameters.
  */
 export function baselineAction(
   state: GameState,

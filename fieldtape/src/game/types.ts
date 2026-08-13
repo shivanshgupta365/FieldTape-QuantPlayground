@@ -1,7 +1,7 @@
 /**
- * FieldTape's public, deterministic teaching simulation.
+ * Alpstead's public, deterministic teaching simulation.
  *
- * This is deliberately not a serialization of Kaggle observations. In
+ * This is Alpstead's own state model, not a port of anything. In
  * particular, `PublicReplayV1` has no shed, seed, worker-inventory, belief, or
  * policy fields. That makes it safe to publish synthetic baseline matches.
  */
@@ -146,7 +146,7 @@ export interface ReplayEvent {
 }
 
 export interface GameState {
-  engineVersion: "fieldtape-engine-v1"
+  engineVersion: "alpstead-engine-v1"
   config: GameConfig
   seed: number
   rngState: number
@@ -258,9 +258,9 @@ export interface PublicReplayCheckpoint {
 }
 
 export interface PublicReplayV1 {
-  kind: "fieldtape.public-replay"
+  kind: "alpstead.public-replay"
   version: 1
-  engineVersion: "fieldtape-engine-v1"
+  engineVersion: "alpstead-engine-v1"
   id: string
   label: string
   synthetic: true

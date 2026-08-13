@@ -1,9 +1,9 @@
 {
-  "kind": "fieldtape.demo-manifest",
+  "kind": "alpstead.demo-manifest",
   "version": 1,
-  "engineVersion": "fieldtape-engine-v1",
+  "engineVersion": "alpstead-engine-v1",
   "label": "Duration vs variance — synthetic public baselines",
-  "seed": "fieldtape-launch-match",
+  "seed": "alpstead-launch-match",
   "players": [
     { "name": "Low-variance plan", "baseline": "steady" },
     { "name": "Convex harvest plan", "baseline": "risk" }
