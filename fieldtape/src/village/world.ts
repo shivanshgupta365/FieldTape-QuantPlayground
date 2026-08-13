@@ -17,11 +17,10 @@ export const ELEV = 14
 
 export type Terrain =
   | "grass"
+  | "meadow"
   | "field"
   | "road"
   | "water"
-  | "rock"
-  | "snow"
   | "plaza"
   | "wood"
 
@@ -35,12 +34,12 @@ export type Terrain =
  * the market plaza is central, and the player's farm is the field block east.
  */
 const MAP = [
-  "^^^***^^^^..........",
-  "^^^^^^^^^..........~",
-  "^^^^^^^..........~~~",
-  "^^^^^...........~~~~",
-  "^^^....####.....~~~~",
-  "^.....#oooo#....~~~~",
+  "..........,,,,,,,,,,",
+  ".........,,,,,,,,,,~",
+  ".......,,,,,,,,,,~~~",
+  "....,,,,,,,,,,,,~~~~",
+  "..,,,,,####.....~~~~",
+  ".,,,,,#oooo#....~~~~",
   "......#oooo#.....~~~",
   ".....##oooo##.....~~",
   "....########.......~",
@@ -59,11 +58,10 @@ const MAP = [
 
 const LEGEND: Record<string, Terrain> = {
   ".": "grass",
+  ",": "meadow",
   f: "field",
   "#": "road",
   "~": "water",
-  "^": "rock",
-  "*": "snow",
   o: "plaza",
   "=": "wood",
 }
@@ -87,27 +85,29 @@ export const terrain: Terrain[][] = MAP.map((row) =>
 export function elevationAt(x: number, y: number): number {
   const t = terrain[y]?.[x]
   if (t === "water") return -1
-  if (t !== "rock" && t !== "snow") return 0
+  if (t !== "meadow") return 0
   // Distance from the far NE corner, normalised. Squared falloff gives a
   // shoulder near the base and a steeper summit.
   const dx = x / MAP_W
   const dy = y / MAP_H
   const toCorner = 1 - Math.min(1, Math.hypot(dx, dy) / 0.72)
   const ridge = Math.pow(Math.max(0, toCorner), 1.6)
-  const base = t === "snow" ? 5.0 : 1.4
+  const base = 0.6
   // Micro-relief must be CONTINUOUS. A modulo-based jitter takes unrelated
   // values on neighbouring tiles, and since wall height is the drop between
   // neighbours, that alone rebuilds the staircase this function exists to
   // avoid. Overlapping sines vary smoothly in both axes.
   const relief =
     Math.sin(x * 0.55) * 0.35 + Math.sin(y * 0.48) * 0.3 + Math.sin((x + y) * 0.31) * 0.25
-  return base + ridge * 5.5 + relief
+  // Gentle upland only. The dramatic height belongs to the parallax backdrop;
+  // in-map elevation just needs to make the north edge feel like a rise.
+  return base + ridge * 2.2 + relief * 0.6
 }
 
 export function walkable(x: number, y: number): boolean {
   if (x < 0 || y < 0 || x >= MAP_W || y >= MAP_H) return false
   const t = terrain[y]![x]!
-  return t !== "water" && t !== "rock" && t !== "snow"
+  return t !== "water"
 }
 
 // ------------------------------------------------------------------- props ---
@@ -140,13 +140,13 @@ export interface VillageProp {
 
 export const props: VillageProp[] = [
   { kind: "church", x: 7, y: 5, solid: true, label: "Chapel", interact: "Ring the bell" },
-  { kind: "bakery", x: 9, y: 6, solid: true, label: "Bakery", interact: "Buy a pretzel" },
-  { kind: "florist", x: 6, y: 7, solid: true, label: "Flower shop", interact: "Buy alpine flowers" },
+  { kind: "bakery", x: 9, y: 6, solid: true, label: "Bakery", interact: "step into the bakery" },
+  { kind: "florist", x: 6, y: 7, solid: true, label: "Flower shop", interact: "step into the flower shop" },
   { kind: "well", x: 8, y: 7, solid: true, label: "Village well", interact: "Draw water" },
   { kind: "signpost", x: 8, y: 9, label: "Signpost", interact: "Read the notice board" },
 
   { kind: "chalet", x: 3, y: 10, solid: true, label: "Your chalet", interact: "Go inside" },
-  { kind: "barn", x: 12, y: 12, solid: true, label: "Barn", interact: "Open the barn" },
+  { kind: "barn", x: 12, y: 12, solid: true, label: "Barn", interact: "step into the barn" },
 
   { kind: "boat", x: 11, y: 16, label: "Rowboat", interact: "Push out onto the lake" },
 
@@ -164,6 +164,20 @@ export const props: VillageProp[] = [
   { kind: "pine", x: 17, y: 6, solid: true },
   { kind: "pine", x: 18, y: 10, solid: true },
   { kind: "pine", x: 6, y: 18, solid: true },
+
+  // Treeline along the northern rise. Replaces the old grey rock massif: a
+  // wooded slope reads as alpine, a staircase of grey cubes does not.
+  { kind: "pine", x: 11, y: 0, solid: true },
+  { kind: "pine", x: 14, y: 0, solid: true },
+  { kind: "pine", x: 17, y: 1, solid: true },
+  { kind: "pine", x: 12, y: 2, solid: true },
+  { kind: "pine", x: 15, y: 2, solid: true },
+  { kind: "pine", x: 18, y: 3, solid: true },
+  { kind: "pine", x: 9, y: 1, solid: true },
+  { kind: "pine", x: 6, y: 3, solid: true },
+  { kind: "pine", x: 4, y: 4, solid: true },
+  { kind: "tree", x: 8, y: 2, solid: true },
+  { kind: "tree", x: 13, y: 3, solid: true },
 ]
 
 const solidAt = new Set(

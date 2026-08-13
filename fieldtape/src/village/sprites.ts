@@ -16,8 +16,7 @@ const P = {
   field: ["#8a5a3c", "#734a31", "#553524"],
   road: ["#b3a68a", "#9a8e74", "#7a705a"],
   water: ["#4d7f96", "#3f6b80", "#2c4f60"],
-  rock: ["#a49a89", "#7d7365", "#5b5347"],
-  snow: ["#f4f7f8", "#cdd8de", "#9aabb6"],
+  meadow: ["#7ba36b", "#63885a", "#4a6842"],
   plaza: ["#c8b795", "#ae9e7e", "#8b7d61"],
   wood: ["#9a6f43", "#835c36", "#634428"],
 } as const satisfies Record<Terrain, readonly [string, string, string]>
@@ -110,7 +109,7 @@ export function drawTerrainTile(
     }
   }
 
-  if (kind === "grass") {
+  if (kind === "grass" || kind === "meadow") {
     ctx.fillStyle = "#7fa871"
     for (const [dx, dy] of [[-12, 2], [8, -4], [2, 7], [16, 3]] as const) {
       ctx.fillRect(dx, dy, 2, 2)

@@ -30,6 +30,16 @@ import {
   type VehicleKind,
 } from "./world"
 import { drawFarmer, drawProp, drawSheep, drawTerrainTile, drawVehicle } from "./sprites"
+import { ShopInterior, type ShopId, type ShopItem } from "./ShopInterior"
+import { DAY_PHASES } from "../art/palette"
+import {
+  applyDayTint,
+  drawCelestialBody,
+  drawLakeHaze,
+  drawRanges,
+  drawSky,
+  drawStars,
+} from "./backdrop"
 
 interface Sheep {
   x: number
@@ -40,11 +50,32 @@ interface Sheep {
 
 const WALK_SPEED = 3.1
 
+/**
+ * Source-pixel size. The whole scene renders into a buffer 1/PIXEL the display
+ * size, then upscales with smoothing off.
+ *
+ * This is what unifies the art with the farm board. Drawing smooth arcs and
+ * anti-aliased curves at full resolution — which is what this did first — gave
+ * the village a vector look that clashed with the board's 16px sprites, so the
+ * two screens read as different products. Rendering low and upscaling forces
+ * every curve onto a pixel grid without re-authoring a single sprite.
+ */
+const PIXEL = 3
+
 export function VillageView({ onPrompt }: { onPrompt?: (text: string | null) => void }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [riding, setRiding] = useState<VehicleKind | null>(null)
   const [prompt, setPrompt] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [openShop, setOpenShop] = useState<ShopId | null>(null)
+  const [purse, setPurse] = useState(120)
+  /** Opening a shop must freeze movement, or the player walks out of the door. */
+  const shopRef = useRef<ShopId | null>(null)
+
+  useEffect(() => {
+    shopRef.current = openShop
+    if (openShop) keys.current.clear()
+  }, [openShop])
 
   // All mutable scene state lives in refs: the render loop must not depend on
   // React state, or every frame would queue a re-render.
@@ -59,6 +90,14 @@ export function VillageView({ onPrompt }: { onPrompt?: (text: string | null) => 
     { x: 15.0, y: 11.5, vx: 0, vy: 0 },
   ])
   const promptRef = useRef<string | null>(null)
+  /** Low-res buffer. Recreated only on resize, never per frame. */
+  const bufferRef = useRef<HTMLCanvasElement | null>(null)
+  const [phaseIndex, setPhaseIndex] = useState(2)
+  const phaseRef = useRef(2)
+
+  useEffect(() => {
+    phaseRef.current = phaseIndex
+  }, [phaseIndex])
 
   useEffect(() => {
     ridingRef.current = riding
@@ -81,7 +120,14 @@ export function VillageView({ onPrompt }: { onPrompt?: (text: string | null) => 
       return
     }
     const target = propNear(p.x, p.y)
-    if (target?.interact) {
+    if (!target) return
+
+    // Shops open an interior; everything else is flavour text.
+    if (target.kind === "bakery" || target.kind === "florist" || target.kind === "barn") {
+      setOpenShop(target.kind)
+      return
+    }
+    if (target.interact) {
       setNotice(`${target.label ?? "Here"} — ${target.interact}.`)
     }
   }, [])
@@ -120,12 +166,24 @@ export function VillageView({ onPrompt }: { onPrompt?: (text: string | null) => 
     let running = true
 
     const resize = () => {
-      const dpr = Math.min(2, window.devicePixelRatio || 1)
       const w = canvas.clientWidth
       const h = canvas.clientHeight
-      canvas.width = Math.floor(w * dpr)
-      canvas.height = Math.floor(h * dpr)
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      // Visible canvas is 1:1 with CSS pixels. Device-pixel-ratio scaling buys
+      // nothing here: the image is nearest-neighbour upscaled from a low-res
+      // buffer, so extra backing resolution is only memory.
+      canvas.width = w
+      canvas.height = h
+      ctx.imageSmoothingEnabled = false
+
+      const bw = Math.max(1, Math.ceil(w / PIXEL))
+      const bh = Math.max(1, Math.ceil(h / PIXEL))
+      let buffer = bufferRef.current
+      if (!buffer) {
+        buffer = document.createElement("canvas")
+        bufferRef.current = buffer
+      }
+      buffer.width = bw
+      buffer.height = bh
     }
     resize()
     window.addEventListener("resize", resize)
@@ -139,7 +197,15 @@ export function VillageView({ onPrompt }: { onPrompt?: (text: string | null) => 
       phase += dt * 1.6
 
       step(dt)
-      draw(ctx, canvas.clientWidth, canvas.clientHeight, phase)
+
+      const buffer = bufferRef.current
+      const bctx = buffer?.getContext("2d")
+      if (buffer && bctx) {
+        bctx.imageSmoothingEnabled = false
+        draw(bctx, buffer.width, buffer.height, phase)
+        ctx.imageSmoothingEnabled = false
+        ctx.drawImage(buffer, 0, 0, buffer.width, buffer.height, 0, 0, canvas.width, canvas.height)
+      }
 
       raf = requestAnimationFrame(frame)
     }
@@ -156,6 +222,10 @@ export function VillageView({ onPrompt }: { onPrompt?: (text: string | null) => 
   // -------------------------------------------------------------- simulation
 
   function step(dt: number): void {
+    // Simulation pauses inside a shop. Sheep drifting and the clock advancing
+    // behind a modal is the kind of thing players notice and dislike.
+    if (shopRef.current) return
+
     const k = keys.current
     const p = player.current
 
@@ -250,22 +320,27 @@ export function VillageView({ onPrompt }: { onPrompt?: (text: string | null) => 
   function draw(ctx: CanvasRenderingContext2D, w: number, h: number, phase: number): void {
     const p = player.current
 
-    // Sky gradient and haze, so the mountain has something to sit against.
-    const sky = ctx.createLinearGradient(0, 0, 0, h)
-    sky.addColorStop(0, "#8fb6c9")
-    sky.addColorStop(0.55, "#c9d8d4")
-    sky.addColorStop(1, "#e6e2d2")
-    ctx.fillStyle = sky
-    ctx.fillRect(0, 0, w, h)
+    const dayPhase = DAY_PHASES[phaseRef.current]!
 
-    // Camera centres the player. Round the translation to whole pixels or the
-    // isometric edges shimmer as you walk.
-    const focus = toScreen(p.x, p.y, elevationAt(Math.round(p.x), Math.round(p.y)))
-    const camX = Math.round(w / 2 - focus.sx)
-    const camY = Math.round(h / 2 - focus.sy)
+    // Camera centres the player. Round the translation to whole source pixels
+    // or the isometric edges shimmer as you walk.
+    const worldFocus = toScreen(p.x, p.y, elevationAt(Math.round(p.x), Math.round(p.y)))
+    const camX = Math.round(w / 2 - worldFocus.sx / PIXEL)
+    const camY = Math.round(h / 2 - worldFocus.sy / PIXEL)
+
+    // Backdrop, furthest first. Drawn before the camera transform so ranges do
+    // not slide 1:1 with the map — they get their own parallax rate.
+    drawSky(ctx, w, h, dayPhase)
+    drawStars(ctx, w, h, dayPhase)
+    drawCelestialBody(ctx, w, h, dayPhase)
+    drawRanges(ctx, w, h, camX, dayPhase)
+    drawLakeHaze(ctx, w, h)
 
     ctx.save()
     ctx.translate(camX, camY)
+    // World geometry is authored in display pixels; the buffer is 1/PIXEL of
+    // that, so scale once here rather than dividing every coordinate.
+    ctx.scale(1 / PIXEL, 1 / PIXEL)
 
     // Terrain, painted in depth order.
     for (let y = 0; y < MAP_H; y += 1) {
@@ -275,8 +350,8 @@ export function VillageView({ onPrompt }: { onPrompt?: (text: string | null) => 
         const s = toScreen(x, y, elev)
         // Cheap frustum cull: the map is small, but this keeps the loop honest
         // if the map grows.
-        if (s.sx + camX < -TILE_W || s.sx + camX > w + TILE_W) continue
-        if (s.sy + camY < -TILE_H * 6 || s.sy + camY > h + TILE_H * 6) continue
+        if (s.sx / PIXEL + camX < -TILE_W || s.sx / PIXEL + camX > w + TILE_W) continue
+        if (s.sy / PIXEL + camY < -TILE_H * 6 || s.sy / PIXEL + camY > h + TILE_H * 6) continue
         ctx.save()
         ctx.translate(s.sx, s.sy)
         // Drops to the two tiles that sit in front of this one on screen.
@@ -348,6 +423,28 @@ export function VillageView({ onPrompt }: { onPrompt?: (text: string | null) => 
     for (const item of items) item.draw()
 
     ctx.restore()
+
+    // Lamp glow from windows, strongest at night. Drawn after the world so it
+    // reads as light leaving the buildings rather than a tint on them.
+    if (dayPhase.lampStrength > 0) {
+      ctx.save()
+      ctx.globalCompositeOperation = "lighter"
+      ctx.globalAlpha = dayPhase.lampStrength * 0.5
+      for (const prop of props) {
+        if (!["chalet", "bakery", "florist", "church", "barn"].includes(prop.kind)) continue
+        const pos = toScreen(prop.x, prop.y, elevationAt(prop.x, prop.y))
+        const gx = pos.sx / PIXEL + camX
+        const gy = pos.sy / PIXEL + camY - 8
+        const glow = ctx.createRadialGradient(gx, gy, 0, gx, gy, 22)
+        glow.addColorStop(0, "rgb(243 217 138 / 85%)")
+        glow.addColorStop(1, "rgb(243 217 138 / 0%)")
+        ctx.fillStyle = glow
+        ctx.fillRect(gx - 22, gy - 22, 44, 44)
+      }
+      ctx.restore()
+    }
+
+    applyDayTint(ctx, w, h, dayPhase)
   }
 
   return (
@@ -363,9 +460,35 @@ export function VillageView({ onPrompt }: { onPrompt?: (text: string | null) => 
           <kbd>E</kbd> interact
         </div>
         {riding && <div className="village-riding">Driving the {VEHICLES[riding].label.toLowerCase()}</div>}
+        <div className="village-time">
+          <label>
+            <span className="sr-only">Time of day</span>
+            <input
+              type="range"
+              min={0}
+              max={DAY_PHASES.length - 1}
+              step={1}
+              value={phaseIndex}
+              onChange={(event) => setPhaseIndex(Number(event.target.value))}
+            />
+          </label>
+          <b>{DAY_PHASES[phaseIndex]!.name}</b>
+        </div>
       </div>
 
-      {prompt && <div className="village-prompt" role="status">{prompt}</div>}
+      {prompt && !openShop && <div className="village-prompt" role="status">{prompt}</div>}
+
+      {openShop && (
+        <ShopInterior
+          shop={openShop}
+          coins={purse}
+          onBuy={(item: ShopItem) => {
+            setPurse((c) => Math.max(0, c - item.price))
+            setNotice(`You bought ${item.name}.`)
+          }}
+          onClose={() => setOpenShop(null)}
+        />
+      )}
       {notice && (
         <div className="village-notice" role="status">
           {notice}
