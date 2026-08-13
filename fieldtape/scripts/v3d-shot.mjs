@@ -1,0 +1,15 @@
+import { chromium } from "@playwright/test";
+const b = await chromium.launch({ args: ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"] });
+const p = await b.newPage({ viewport: { width: 1440, height: 820 } });
+const errs = [];
+p.on("pageerror", (e) => errs.push(String(e)));
+p.on("console", (m) => m.type() === "error" && errs.push(m.text().slice(0, 140)));
+await p.goto((process.env.BASE ?? "http://localhost:5173") + "/village", { waitUntil: "networkidle" });
+await p.waitForTimeout(3500);
+console.log("webgl canvas:", await p.locator("canvas.v3d-canvas").count());
+await p.locator(".v3d-wrap").screenshot({ path: "output/shots/v3d-day.png" });
+await p.locator(".v3d-time input").fill("5");
+await p.waitForTimeout(1200);
+await p.locator(".v3d-wrap").screenshot({ path: "output/shots/v3d-night.png" });
+console.log(errs.length ? "ERRORS: " + errs.slice(0,2).join(" | ") : "no console errors");
+await b.close();

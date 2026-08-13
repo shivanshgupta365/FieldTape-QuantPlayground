@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { VillageView } from "../village/VillageView"
+import { Village3D } from "../village3d/Village3D"
 
 export function VillagePage() {
   return (
@@ -7,17 +7,17 @@ export function VillagePage() {
       <header className="village-head">
         <div>
           <p className="eyebrow">Lucerne valley</p>
-          <h1>The village</h1>
+          <h1>The valley</h1>
         </div>
         <nav>
           <Link className="button" to="/play">Back to the farm</Link>
         </nav>
       </header>
-      <VillageView />
+      <Village3D />
       <p className="village-caption">
-        Walk down to the lake, drive the tractor across the fields, herd the sheep
-        toward the barn, or just stand in the plaza and listen. Nothing here is on
-        a timer.
+        Ninety-six squares of valley. Walk up to the ridge viewpoint, take the
+        jetty out over the lake, drive a tractor through the orchard terraces, or
+        find the old mill. Ten places to discover, and nothing on a timer.
       </p>
     </div>
   )

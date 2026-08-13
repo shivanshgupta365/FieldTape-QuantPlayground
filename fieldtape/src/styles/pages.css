@@ -62,35 +62,6 @@
 .music-panel footer small { display: block; margin-top: 7px; font-size: 10px; color: var(--muted); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 
-/* ---- Village --------------------------------------------------------- */
-.village-page { display: flex; flex-direction: column; gap: 14px; padding: 20px 24px 28px; }
-.village-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; }
-.village-head h1 { font-family: Georgia, serif; font-size: 32px; margin: 2px 0 0; }
-.village-wrap { position: relative; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #8fb6c9; }
-.village-canvas { display: block; width: 100%; height: min(70vh, 640px); }
-.village-hud { position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-.village-hint, .village-riding {
-  display: flex; align-items: center; gap: 6px; padding: 7px 11px;
-  background: rgb(21 20 15 / 72%); color: var(--paper-light);
-  border-radius: 999px; font-size: 11px; letter-spacing: 0.04em;
-}
-.village-hint kbd { background: var(--paper-light); color: var(--ink); border-radius: 4px; padding: 1px 5px; font: 600 10px ui-monospace, monospace; }
-.village-hint span { opacity: 0.5; }
-.village-riding { background: rgb(231 167 47 / 92%); color: var(--ink); font-weight: 600; }
-.village-prompt {
-  position: absolute; left: 50%; bottom: 20px; transform: translateX(-50%);
-  padding: 9px 16px; background: rgb(21 20 15 / 82%); color: var(--paper-light);
-  border-radius: 999px; font-size: 13px;
-}
-.village-notice {
-  position: absolute; right: 14px; bottom: 18px; display: flex; gap: 10px; align-items: center;
-  max-width: 300px; padding: 11px 14px; background: var(--paper-light);
-  border: 1px solid var(--line); border-radius: 10px; font-size: 13px;
-  box-shadow: 0 8px 24px rgb(21 20 15 / 22%);
-}
-.village-notice button { border: 0; background: none; font-size: 17px; cursor: pointer; line-height: 1; }
-.village-caption { max-width: 62ch; color: var(--muted); font-size: 13px; }
-
 /* ---- How to play ----------------------------------------------------- */
 .howto-page { display: flex; flex-direction: column; gap: 34px; padding: 26px 24px 44px; max-width: 980px; }
 .howto-hero h1 { font-family: Georgia, serif; font-size: clamp(28px, 4vw, 42px); margin: 6px 0 10px; line-height: 1.1; }
@@ -205,3 +176,37 @@
 .shop-items button:disabled { background: var(--paper-deep); color: var(--muted); cursor: default; }
 .shop-panel > footer { display: flex; justify-content: space-between; align-items: center; padding: 11px 16px 14px; border-top: 1px solid var(--line); font-size: 12px; }
 .shop-panel > footer kbd { background: var(--ink); color: var(--paper-light); border-radius: 4px; padding: 1px 5px; font: 600 10px ui-monospace, monospace; }
+
+/* ---- 3D valley -------------------------------------------------------- */
+.v3d-wrap { position: relative; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: #0d1420; }
+.v3d-mount { width: 100%; height: min(74vh, 700px); }
+.v3d-canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; cursor: grab; }
+.v3d-canvas:active { cursor: grabbing; }
+
+.v3d-hud { position: absolute; top: 12px; left: 12px; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.v3d-keys, .v3d-time, .v3d-progress {
+  display: flex; align-items: center; gap: 6px; padding: 7px 12px;
+  background: rgb(13 20 32 / 74%); color: var(--paper-light);
+  border-radius: 999px; font-size: 11px; letter-spacing: 0.03em; width: fit-content;
+}
+.v3d-keys kbd { background: var(--paper-light); color: var(--ink); border-radius: 4px; padding: 1px 5px; font: 600 10px ui-monospace, monospace; }
+.v3d-keys span { opacity: 0.45; }
+.v3d-time { pointer-events: auto; }
+.v3d-time input { width: 96px; accent-color: var(--gold); }
+.v3d-time b { min-width: 74px; }
+.v3d-progress { background: rgb(231 167 47 / 88%); color: var(--ink); font-weight: 600; }
+
+.v3d-prompt {
+  position: absolute; left: 50%; bottom: 22px; transform: translateX(-50%);
+  padding: 9px 17px; background: rgb(13 20 32 / 86%); color: var(--paper-light);
+  border-radius: 999px; font-size: 13px; white-space: nowrap;
+}
+.v3d-notice {
+  position: absolute; right: 14px; bottom: 20px; display: flex; gap: 10px; align-items: center;
+  max-width: 300px; padding: 11px 14px; background: var(--paper-light);
+  border: 1px solid var(--line); border-radius: 10px; font-size: 13px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 34%);
+}
+.v3d-notice button { border: 0; background: none; font-size: 17px; cursor: pointer; line-height: 1; }
+
+@media (max-width: 760px) { .v3d-mount { height: 60vh; } }
