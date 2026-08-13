@@ -5,7 +5,7 @@ import { LineChart } from "../components/LineChart";
 import { SectionRule } from "../components/SectionRule";
 import { labById, labs } from "../data/labs";
 import { runLabModel } from "../lib/labModel";
-import { offlineDb } from "../lib/offlineStore";
+import { saveModuleProgress } from "../lib/persistence";
 
 export function LabModulePage() {
   const { moduleId } = useParams();
@@ -21,7 +21,7 @@ export function LabModulePage() {
   const next = labs[(index + 1) % labs.length]!;
 
   const saveProgress = async () => {
-    await offlineDb.progress.put({ moduleId: lab.id, completed: true, bestScore: prediction ? 100 : 70, updatedAt: new Date().toISOString() });
+    await saveModuleProgress({ moduleId: lab.id, masteryScore: prediction ? 100 : 70 });
     setSaved(true);
   };
 

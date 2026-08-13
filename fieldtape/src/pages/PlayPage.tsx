@@ -22,6 +22,7 @@ import {
   type ProductId,
 } from "../game";
 import { canvasTilesFromState } from "../lib/gameView";
+import { askCoach, localAdvice } from "../lib/coach";
 
 const cropNames: Record<CropId, string> = { WHEAT: "Wheat", CARROT: "Carrot", TOMATO: "Tomato", STRAWBERRY: "Strawberry", MELON: "Melon" };
 const symbols: Record<string, string> = { WHEAT: "WHT", CARROT: "CRT", TOMATO: "TOM", STRAWBERRY: "STR", MELON: "MLN" };
@@ -36,6 +37,8 @@ export function PlayPage() {
   const [active, setActive] = useState<ActionId>();
   const [notice, setNotice] = useState("Select a plot, then commit one action. Every order advances the shared clock.");
   const [sellProduct, setSellProduct] = useState<ProductId>("WHEAT");
+  const [coach, setCoach] = useState<{ advice: string; source: string } | null>(null);
+  const [coachBusy, setCoachBusy] = useState(false);
   const clock = selectClock(state);
   const score = selectScoreboard(state);
   const metrics = selectFarmMetrics(state, 0);
@@ -90,6 +93,29 @@ export function PlayPage() {
     setNotice("The transparent steady baseline completed the remaining moves for this day.");
   };
 
+  const coachState = useCallback(() => ({
+    day: state.day,
+    hour: state.hour,
+    money: state.farms[0].money,
+    workers: state.farms[0].workers,
+    plantedTiles: metrics.occupiedTiles,
+    dryTiles: metrics.dryRiskTiles,
+    readyTiles: metrics.harvestableTiles,
+    unlockedTiles: metrics.unlockedTiles,
+    stockUnits: metrics.stockUnits,
+  }), [state, metrics]);
+
+  const requestCoach = useCallback(async () => {
+    setCoachBusy(true);
+    // Show the deterministic answer immediately, then upgrade it if a provider
+    // replies. The panel is never blank and never spins on a dead network.
+    const snapshot = coachState();
+    setCoach({ advice: localAdvice(snapshot), source: "local" });
+    const reply = await askCoach(snapshot);
+    setCoach(reply);
+    setCoachBusy(false);
+  }, [coachState]);
+
   const selectTile = (tile: CanvasTile) => {
     setSelectedId(tile.id);
     const what = tile.crop ?? tile.animal ?? (tile.weed ? "WEED" : null);
@@ -127,7 +153,16 @@ export function PlayPage() {
             { label: "Ready", value: String(metrics.harvestableTiles), delta: "harvestable plots" },
           ]} />
 
-          <section className="coach-note"><Target size={17} /><div><span>MODEL COACH</span><p>{notice}</p></div></section>
+          <section className="coach-note">
+            <Target size={17} />
+            <div>
+              <span>Coach{coach && coach.source !== "local" ? ` · ${coach.source}` : ""}</span>
+              <p>{coach?.advice ?? notice}</p>
+              <button type="button" className="coach-ask" onClick={() => void requestCoach()} disabled={coachBusy}>
+                {coachBusy ? "Thinking…" : "Ask the coach"}
+              </button>
+            </div>
+          </section>
 
           <section className="selected-inspector">
             <header><span>SELECTED PLOT</span><b>{selected ? `(${selected.x + 1}, ${selected.y + 1})` : "—"}</b></header>

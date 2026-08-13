@@ -134,3 +134,33 @@
   .music-bars i { animation: none; }
   .music-fab { transition: none; }
 }
+
+/* ---- Coach + leaderboard --------------------------------------------- */
+.coach-ask {
+  margin-top: 8px; padding: 5px 11px; font-size: 11px; letter-spacing: 0.05em;
+  text-transform: uppercase; border: 1px solid var(--line); border-radius: 999px;
+  background: var(--paper-light); cursor: pointer;
+}
+.coach-ask:hover:not(:disabled) { background: var(--gold); border-color: var(--gold); }
+.coach-ask:disabled { opacity: 0.55; cursor: default; }
+
+.board-meta { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: 11px; letter-spacing: 0.05em; color: var(--muted); text-transform: uppercase; }
+.board-meta code { font-size: 11px; background: var(--paper-deep); padding: 1px 6px; border-radius: 4px; text-transform: none; }
+
+.board-skeleton { display: flex; flex-direction: column; gap: 6px; }
+.board-skeleton-row { height: 40px; border-radius: 7px; background: linear-gradient(90deg, var(--paper-deep) 25%, var(--paper-light) 50%, var(--paper-deep) 75%); background-size: 200% 100%; animation: shimmer 1.3s linear infinite; }
+@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+.board-empty { display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 46px 20px; text-align: center; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); }
+.board-empty h2 { font-family: Georgia, serif; font-size: 20px; margin: 0; color: var(--ink); }
+.board-empty p { max-width: 44ch; font-size: 13.5px; margin: 0; }
+
+.board-pager { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding-top: 12px; }
+.board-pager button { display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper-light); font-size: 12.5px; cursor: pointer; }
+.board-pager button:hover:not(:disabled) { background: var(--paper-deep); }
+.board-pager button:disabled { opacity: 0.45; cursor: default; }
+.board-pager span { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  .board-skeleton-row { animation: none; }
+}

@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { LineChart } from "../components/LineChart";
 import { PageHeader } from "../components/PageHeader";
 import { SectionRule } from "../components/SectionRule";
-import { offlineDb } from "../lib/offlineStore";
+import { saveNotebook } from "../lib/persistence";
 
 type Scenario = { horizon: number; tiles: number; workers: number; premium: number; impact: number };
 const initial: Scenario = { horizon: 24, tiles: 24, workers: 2, premium: 35, impact: 45 };
@@ -39,7 +39,7 @@ export function ResearchPage() {
   };
 
   const save = async () => {
-    await offlineDb.notebooks.put({ id: `scenario-${Date.now()}`, title: `Research run ${runs + 1}`, hypothesis, parameters: scenario, result: `Terminal ${terminal}; utilization ${utilization}%`, updatedAt: new Date().toISOString() });
+    await saveNotebook({ title: `Research run ${runs + 1}`, hypothesis, parameters: scenario, result: `Terminal ${terminal}; utilization ${utilization}%` });
     setSaved(true);
   };
 
