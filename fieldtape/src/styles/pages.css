@@ -223,3 +223,15 @@
   font-size: 9px; letter-spacing: 0.09em; text-transform: uppercase;
   color: var(--paper-light); text-shadow: 0 1px 2px rgb(0 0 0 / 80%);
 }
+
+/* ---- Research desk ---------------------------------------------------- */
+.research-progress { height: 5px; background: var(--paper-deep); border-radius: 999px; overflow: hidden; margin-top: 10px; }
+.research-progress i { display: block; height: 100%; background: var(--gold); transition: width 120ms linear; }
+.research-hint { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
+.research-hint .danger { color: var(--red); }
+.research-empty { display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 54px 22px; text-align: center; color: var(--muted); }
+.research-empty h2 { font-family: Georgia, serif; font-size: 20px; margin: 0; color: var(--ink); }
+.research-empty p { max-width: 46ch; font-size: 13.5px; margin: 0; }
+.spin { animation: spin 900ms linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
