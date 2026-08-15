@@ -43,7 +43,7 @@ npx hyperframes docs <topic> # reference docs in terminal
 ```
 
 > **`npm run dev` is a long-running server, not a one-shot command.** It blocks until stopped.
-> In Claude Code, always run it with `run_in_background: true`. Never run it as a foreground
+> In automated environments, always run it in the background. Never run it as a foreground
 > command — it will time out and the server will die, breaking the browser preview.
 
 > **Pinned CLI version.** These scripts pin an exact `hyperframes@X.Y.Z` so this project re-renders identically over time. Weeks later that pin lags fixes shipped since. To move up: `npx hyperframes@latest upgrade --project . --check` (shows the delta), then `npx hyperframes@latest upgrade --project .` to rewrite the pins. Always unpinned — the pinned script re-runs the old version against itself.

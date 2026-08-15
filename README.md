@@ -27,6 +27,16 @@ FieldTape is a public-safe, browser-based farming strategy game and quant-learni
 | `/leaderboard` | Public ranking board |
 | `/research` | Scenario and research notebook tools |
 
+## Product showcase
+
+| Landing and strategy deck | 3D alpine village |
+| --- | --- |
+| ![FieldTape landing screen](fieldtape/public/product-showcase/landing.png) | ![FieldTape alpine village](fieldtape/public/product-showcase/village.png) |
+| Playable farming season | Quant learning lab |
+| ![FieldTape farming board](fieldtape/public/product-showcase/play.png) | ![FieldTape quant learning lab](fieldtape/public/product-showcase/lab.png) |
+| Public-safe match viewer | Season leaderboard |
+| ![FieldTape spectator match](fieldtape/public/product-showcase/watch.png) | ![FieldTape season leaderboard](fieldtape/public/product-showcase/leaderboard.png) |
+
 ## Run locally
 
 Prerequisites: Node.js 20+ and pnpm 9+.
