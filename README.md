@@ -32,12 +32,15 @@ FieldTape is a public-safe, browser-based farming strategy game and quant-learni
 | Strategy deck | Playable farming season |
 | --- | --- |
 | ![FieldTape landing screen](fieldtape/public/product-showcase/landing.png) | ![FieldTape farming board](fieldtape/public/product-showcase/play.png) |
+
 | Updated 3D village — aerial | Updated 3D village — ground level |
 | --- | --- |
 | ![FieldTape village aerial view](fieldtape/public/product-showcase/village-air.png) | ![FieldTape village ground view](fieldtape/public/product-showcase/village-ground.png) |
+
 | Learn — quant labs | Research terminal — 64-season graph |
 | --- | --- |
 | ![FieldTape quant learning lab](fieldtape/public/product-showcase/lab.png) | ![FieldTape Research tab with a 64-season outcome graph](fieldtape/public/product-showcase/research.png) |
+
 | Public-safe spectator match | Season leaderboard |
 | --- | --- |
 | ![FieldTape spectator match viewer](fieldtape/public/product-showcase/watch.png) | ![FieldTape season leaderboard](fieldtape/public/product-showcase/leaderboard.png) |
