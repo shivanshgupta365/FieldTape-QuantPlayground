@@ -140,14 +140,19 @@ export function heightAt(x: number, z: number): number {
 
   let h = 3 + slope + ridge + roll + fine
 
-  // Flatten the village bowl so buildings sit level and streets are walkable.
-  // Damped near the water: flattening the bowl to a fixed 3.0 right up to the
-  // shoreline is what turned the lake edge into a vertical cliff.
-  const vd = Math.hypot(x - 2, z - 6)
-  if (vd < 34) {
+  // Flatten the town basin. Streets have to be level and buildings have to sit
+  // on the ground, so the built area is a near-plateau with a soft rim.
+  //
+  // Square falloff, not radial: the town is a rectangular street grid, and a
+  // circular flatten leaves the corner blocks perched on a slope. Damped near
+  // the water, because flattening to a fixed height right up to the shoreline is
+  // what turned the lake edge into a cliff.
+  const townEdge = Math.max(Math.abs(x - 0) / 56, Math.abs(z - 4) / 56)
+  if (townEdge < 1) {
     const shoreDamp = Math.min(1, Math.max(0, lake) / 34)
-    const flat = (1 - Math.min(1, vd / 34)) * shoreDamp
-    h = h * (1 - flat * 0.9) + 3.0 * (flat * 0.9)
+    const t = 1 - townEdge
+    const flat = t * t * (3 - 2 * t) * shoreDamp
+    h = h * (1 - flat * 0.95) + 3.2 * (flat * 0.95)
   }
 
   // Beach easing. Wide, so land wades into the water instead of dropping in.

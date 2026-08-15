@@ -307,3 +307,30 @@
   background: rgb(201 86 63 / 92%); color: var(--paper-light);
   border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
 }
+
+/* ---- Village full screen + district ----------------------------------- */
+/* Two modes: the real Fullscreen API (::backdrop, element fills the screen) and
+   a CSS fallback for browsers or iframes that refuse the API. */
+.v3d-wrap.is-fullscreen {
+  position: fixed; inset: 0; z-index: 200; border-radius: 0; border: 0;
+}
+.v3d-wrap:fullscreen { border-radius: 0; border: 0; }
+.v3d-wrap:fullscreen .v3d-mount,
+.v3d-wrap.is-fullscreen .v3d-mount { height: 100vh; }
+
+.v3d-fullscreen {
+  position: absolute; top: 12px; right: 12px; z-index: 6;
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 13px; border: 0; border-radius: 999px;
+  background: rgb(13 20 32 / 74%); color: var(--paper-light);
+  font-size: 11px; letter-spacing: 0.05em; cursor: pointer;
+}
+.v3d-fullscreen:hover { background: rgb(13 20 32 / 92%); }
+.v3d-fullscreen:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+.v3d-district {
+  display: flex; align-items: center; padding: 7px 13px; width: fit-content;
+  max-width: 340px;
+  background: rgb(245 240 227 / 92%); color: var(--ink);
+  border-radius: 999px; font-size: 11.5px; font-weight: 600;
+}

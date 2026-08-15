@@ -14,11 +14,13 @@
  *  - Flat shading everywhere. Smooth normals read as blurry at this resolution.
  */
 
+import { Maximize2, Minimize2 } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import { DAY_PHASES } from "../art/palette"
 import { ShopInterior, type ShopId, type ShopItem } from "../shops/ShopInterior"
 import { Minimap, type MinimapHandle } from "./Minimap"
+import { buildCity, quarterAt } from "./city"
 import { HALF, buildTerrain, groundAt, inWater } from "./terrain"
 import {
   buildFarmer,
@@ -65,6 +67,10 @@ export function Village3D() {
   const [visited, setVisited] = useState<string[]>([])
   /** Mirrors player.riding for the HUD. The sim keeps its own mutable copy. */
   const [vehicle, setVehicle] = useState<string | null>(null)
+  const [district, setDistrict] = useState<string | null>(null)
+  const [fullscreen, setFullscreen] = useState(false)
+  const districtRef = useRef<string | null>(null)
+  const wrapRef = useRef<HTMLDivElement | null>(null)
 
   const keys = useRef<Set<string>>(new Set())
   const phaseRef = useRef(2)
@@ -79,6 +85,26 @@ export function Village3D() {
     shopRef.current = openShop
     if (openShop) keys.current.clear()
   }, [openShop])
+
+  const toggleFullscreen = useCallback(() => {
+    const el = wrapRef.current
+    if (!el) return
+    // Prefer the real Fullscreen API; the CSS fallback below covers browsers and
+    // iframes that refuse it, so the button always does something.
+    if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => setFullscreen(false))
+    } else if (el.requestFullscreen) {
+      void el.requestFullscreen().catch(() => setFullscreen((v) => !v))
+    } else {
+      setFullscreen((v) => !v)
+    }
+  }, [])
+
+  useEffect(() => {
+    const onChange = () => setFullscreen(Boolean(document.fullscreenElement))
+    document.addEventListener("fullscreenchange", onChange)
+    return () => document.removeEventListener("fullscreenchange", onChange)
+  }, [])
 
   const onBuy = useCallback((item: ShopItem) => {
     setPurse((c) => Math.max(0, c - item.price))
@@ -152,7 +178,26 @@ export function Village3D() {
     const landmarks: Landmark[] = buildLandmarks()
     for (const l of landmarks) scene.add(l.group)
 
-    const veg = buildVegetation(landmarks)
+    // Town before vegetation: the scatter needs the building footprints so trees
+    // do not grow up through the roofs.
+    const city = buildCity(
+      groundAt,
+      landmarks.map((l) => ({ x: l.x, z: l.z, r: l.radius })),
+    )
+    scene.add(city.group)
+
+    const veg = buildVegetation([
+      ...landmarks,
+      ...city.blockers.map((b, i) => ({
+        id: `city-${i}`,
+        label: "",
+        action: "",
+        x: b.x,
+        z: b.z,
+        radius: b.r + 1.2,
+        group: new THREE.Group(),
+      })),
+    ])
     scene.add(veg.conifers, veg.trunks, veg.broadleaf)
 
     const farmer = buildFarmer()
@@ -239,6 +284,9 @@ export function Village3D() {
         if (Math.hypot(l.x - x, l.z - z) < l.radius) return true
       }
       for (const b of veg.blockers) {
+        if (Math.hypot(b.x - x, b.z - z) < b.r) return true
+      }
+      for (const b of city.blockers) {
         if (Math.hypot(b.x - x, b.z - z) < b.r) return true
       }
       return false
@@ -549,6 +597,13 @@ export function Village3D() {
 
       // Minimap redraw is cheap but not free; a few times a second is plenty for
       // a map and keeps it off the per-frame budget.
+      const here = quarterAt(player.x, player.z)
+      const hereName = here ? `${here.name} — ${here.blurb}` : null
+      if (hereName !== districtRef.current) {
+        districtRef.current = hereName
+        setDistrict(hereName)
+      }
+
       minimapAccum += dt
       if (minimapAccum > 0.12) {
         minimapAccum = 0
@@ -621,8 +676,18 @@ export function Village3D() {
   const total = 25
 
   return (
-    <div className="v3d-wrap">
+    <div className={`v3d-wrap${fullscreen ? " is-fullscreen" : ""}`} ref={wrapRef}>
       <div className="v3d-mount" ref={mountRef} />
+
+      <button
+        type="button"
+        className="v3d-fullscreen"
+        onClick={toggleFullscreen}
+        aria-pressed={fullscreen}
+      >
+        {fullscreen ? <Minimize2 size={15} /> : <Maximize2 size={15} />}
+        {fullscreen ? "Exit full screen" : "Full screen"}
+      </button>
 
       <div className="v3d-hud">
         <div className="v3d-keys">
@@ -651,6 +716,7 @@ export function Village3D() {
           Discovered {visited.length} / {total}
         </div>
         {vehicle && <div className="v3d-vehicle">{vehicle}</div>}
+        {district && <div className="v3d-district">{district}</div>}
         <Minimap handleRef={minimapRef} />
       </div>
 
