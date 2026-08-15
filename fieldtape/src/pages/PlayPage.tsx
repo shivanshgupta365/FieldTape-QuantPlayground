@@ -24,6 +24,7 @@ import {
 } from "../game";
 import { canvasTilesFromState } from "../lib/gameView";
 import { askCoach, localAdvice } from "../lib/coach";
+import { submitRun } from "../lib/leaderboard";
 
 const cropNames: Record<CropId, string> = { WHEAT: "Wheat", CARROT: "Carrot", TOMATO: "Tomato", STRAWBERRY: "Strawberry", MELON: "Melon" };
 const symbols: Record<string, string> = { WHEAT: "WHT", CARROT: "CRT", TOMATO: "TOM", STRAWBERRY: "STR", MELON: "MLN" };
@@ -40,6 +41,9 @@ export function PlayPage() {
   const [sellProduct, setSellProduct] = useState<ProductId>("WHEAT");
   const [coach, setCoach] = useState<{ advice: string; source: string } | null>(null);
   const [coachBusy, setCoachBusy] = useState(false);
+  const [actionLog, setActionLog] = useState<GameAction[][]>([]);
+  const [posting, setPosting] = useState(false);
+  const [postNotice, setPostNotice] = useState("");
   const clock = selectClock(state);
   const score = selectScoreboard(state);
   const metrics = selectFarmMetrics(state, 0);
@@ -49,6 +53,7 @@ export function PlayPage() {
 
   const commit = useCallback((action: GameAction) => {
     setState((current) => dispatchHumanAction(current, action, 0, "balanced"));
+    setActionLog((current) => [...current, [action]]);
     setNotice(`Committed ${action.type}. The public baseline moved at the same clock tick.`);
   }, []);
 
@@ -85,14 +90,24 @@ export function PlayPage() {
   };
 
   const delegateDay = () => {
-    setState((current) => {
-      let next = current;
+      let next = state;
+      const delegated: GameAction[][] = [];
       const target = Math.min(next.config.days * next.config.turnsPerDay, (Math.floor(next.turn / 24) + 1) * 24);
-      while (next.status === "running" && next.turn < target) next = stepGame(next, { 0: baselineAction(next, 0, "steady"), 1: baselineAction(next, 1, "balanced") });
-      return next;
-    });
+      while (next.status === "running" && next.turn < target) {
+        const action = baselineAction(next, 0, "steady")
+        delegated.push([...action])
+        next = stepGame(next, { 0: action, 1: baselineAction(next, 1, "balanced") })
+      }
+    setState(next);
+    setActionLog((current) => [...current, ...delegated]);
     setNotice("The transparent steady baseline completed the remaining moves for this day.");
   };
+  const postScore = async () => {
+    setPosting(true)
+    const result = await submitRun({ seed: String(state.seed), finalMoney: score[0].money, daysCompleted: state.day, actionsUsed: actionLog.flat().length, actionLog })
+    setPosting(false)
+    setPostNotice(result.ok ? `Verified — you are #${result.rank}.` : result.message)
+  }
 
   const coachState = useCallback(() => ({
     day: state.day,
@@ -130,7 +145,7 @@ export function PlayPage() {
         <div className="game-mode"><span>PLAY / HUMAN VS PUBLIC BASELINE</span><strong>SEED {state.seed.toString(16).toUpperCase()}</strong></div>
         <div className="clock-block"><span>DAY</span><b>{clock.displayDay.toString().padStart(2, "0")}</b><i>/ 30</i><span>TURN</span><b>{clock.hour.toString().padStart(2, "0")}</b><i>/ 24</i></div>
         <div className="lead-block"><span>BANK LEAD</span><b className={score[0].lead >= 0 ? "positive" : "negative"}>{score[0].lead >= 0 ? "+" : ""}¢{score[0].lead.toLocaleString()}</b><small>margin shown; outcome is W/L/tie</small></div>
-        <button className="reset-game" onClick={() => { setState(createGame({ seed: "alpstead-player-7301", playerNames: ["Your desk", "Public baseline"] })); setSelectedId(undefined); }}><RotateCcw size={14} /> Restart</button>
+        <button className="reset-game" onClick={() => { setState(createGame({ seed: "alpstead-player-7301", playerNames: ["Your desk", "Public baseline"] })); setActionLog([]); setSelectedId(undefined); }}><RotateCcw size={14} /> Restart</button>
       </header>
 
       <div className="play-layout">
@@ -183,7 +198,7 @@ export function PlayPage() {
         <button className="pass-action" onClick={() => commit({ type: "wait" })} disabled={finished}>Pass move <ChevronRight size={15} /></button>
       </div>
 
-      {finished && <div className="season-result" role="dialog" aria-modal="true"><span>SEASON CLOSED</span><h2>{score[0].money > score[1].money ? "You finished ahead." : score[0].money === score[1].money ? "The desks tied." : "The baseline finished ahead."}</h2><p>Your bank: ¢{score[0].money.toLocaleString()} · Baseline: ¢{score[1].money.toLocaleString()}</p><button className="button button-gold" onClick={() => setState(createGame({ seed: Date.now(), playerNames: ["Your desk", "Public baseline"] }))}>Run a new seed</button></div>}
+      {finished && <div className="season-result" role="dialog" aria-modal="true"><span>SEASON CLOSED</span><h2>{score[0].money > score[1].money ? "You finished ahead." : score[0].money === score[1].money ? "The desks tied." : "The baseline finished ahead."}</h2><p>Your bank: ¢{score[0].money.toLocaleString()} · Baseline: ¢{score[1].money.toLocaleString()}</p><button className="button button-gold" onClick={() => void postScore()} disabled={posting || actionLog.length !== state.config.days * state.config.turnsPerDay}>{posting ? "Verifying…" : "Post verified score"}</button>{postNotice && <p>{postNotice}</p>}<button className="button" onClick={() => { setState(createGame({ seed: Date.now(), playerNames: ["Your desk", "Public baseline"] })); setActionLog([]); setPostNotice("") }}>Run a new seed</button></div>}
     </div>
   );
 }

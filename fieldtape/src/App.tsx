@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import { AppShell } from "./components/AppShell";
+import { EntryGate } from "./components/EntryGate";
 
 const LandingPage = lazy(() => import("./pages/LandingPage").then((module) => ({ default: module.LandingPage })));
 const PlayPage = lazy(() => import("./pages/PlayPage").then((module) => ({ default: module.PlayPage })));
@@ -14,6 +15,7 @@ const ProfilePage = lazy(() => import("./pages/ProfilePage").then((module) => ({
 const HowToPlayPage = lazy(() => import("./pages/HowToPlayPage").then((m) => ({ default: m.HowToPlayPage })));
 const VillagePage = lazy(() => import("./pages/VillagePage").then((m) => ({ default: m.VillagePage })));
 const StoryPage = lazy(() => import("./pages/StoryPage").then((module) => ({ default: module.StoryPage })));
+const JoinPage = lazy(() => import("./pages/JoinPage").then((module) => ({ default: module.JoinPage })));
 
 /* Dev-only. import.meta.env.DEV is statically false in a production build, so
    Rollup drops both the route and the chunk entirely. Verified by check:public. */
@@ -29,7 +31,8 @@ export function App() {
   return (
     <Suspense fallback={<LoadingTape />}><Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route element={<AppShell />}>
+      <Route path="/join" element={<JoinPage />} />
+      <Route element={<EntryGate><AppShell /></EntryGate>}>
         <Route path="/play" element={<PlayPage />} />
         <Route path="/how-to-play" element={<HowToPlayPage />} />
         <Route path="/village" element={<VillagePage />} />

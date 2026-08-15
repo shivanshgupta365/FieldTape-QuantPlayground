@@ -87,6 +87,30 @@ describe("Alpstead deterministic engine", () => {
     expect(right).toEqual(left)
   })
 
+  it("replays a completed normalized player action timeline", () => {
+    let played = createGame({ seed: "verified-season" })
+    const actionLog = [] as ReturnType<typeof baselineAction>[]
+    while (played.status === "running") {
+      const playerActions = baselineAction(played, 0, "steady")
+      actionLog.push(playerActions)
+      played = stepGame(played, {
+        0: playerActions,
+        1: baselineAction(played, 1, "balanced"),
+      })
+    }
+
+    let replayed = createGame({ seed: "verified-season" })
+    for (const playerActions of actionLog) {
+      replayed = stepGame(replayed, {
+        0: playerActions,
+        1: baselineAction(replayed, 1, "balanced"),
+      })
+    }
+
+    expect(actionLog).toHaveLength(720)
+    expect(replayed).toEqual(played)
+  })
+
   it("builds and reconstructs a safe, complete public replay", () => {
     const replay = generateDemoReplay(7)
     expect(validatePublicReplay(replay)).toEqual({ ok: true, errors: [] })

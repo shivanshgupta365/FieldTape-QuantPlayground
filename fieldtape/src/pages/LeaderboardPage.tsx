@@ -13,8 +13,7 @@ export function LeaderboardPage() {
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
-    fetchBoardPage(page).then((result) => {
+    const load = () => fetchBoardPage(page).then((result) => {
       // Guard against a stale response landing after a newer page request.
       if (cancelled) return
       setRows(result.rows)
@@ -22,8 +21,12 @@ export function LeaderboardPage() {
       setOffline(result.offline)
       setLoading(false)
     })
+    setLoading(true)
+    void load()
+    const timer = window.setInterval(() => void load(), 15000)
     return () => {
       cancelled = true
+      window.clearInterval(timer)
     }
   }, [page])
 

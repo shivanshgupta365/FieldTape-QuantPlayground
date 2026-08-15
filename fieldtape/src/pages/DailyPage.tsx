@@ -19,7 +19,7 @@ export function DailyPage() {
           <Link className="button button-gold" to="/play?challenge=daily">Enter challenge <ArrowRight size={15} /></Link>
         </section>
         <div className="daily-board-wrap"><Farm3D label="Challenge state" tiles={demoFarmTiles({ seed: "alpstead-daily", days: 12, style: "steady" })} /></div>
-        <aside className="daily-board"><SectionRule index="B" label="TODAY'S BOARD" /><ol><li><span>01</span><b>grain_alpha</b><em>¢5,884</em></li><li><span>02</span><b>soil_signal</b><em>¢5,796</em></li><li><span>03</span><b>fieldnote</b><em>¢5,642</em></li></ol><Link to="/leaderboard"><Trophy size={14} /> Full leaderboard</Link></aside>
+        <aside className="daily-board"><SectionRule index="B" label="SEASON BOARD" /><p>Verified player names and final banks are published on the live public board.</p><Link to="/leaderboard"><Trophy size={14} /> Open live leaderboard</Link></aside>
       </div>
     </div>
   );
