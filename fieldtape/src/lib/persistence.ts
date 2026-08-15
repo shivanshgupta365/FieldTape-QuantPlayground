@@ -81,9 +81,11 @@ export async function saveNotebook(entry: NotebookEntry): Promise<boolean> {
   const { error } = await supabase.from("research_notebooks").insert({
     user_id: userId,
     title: entry.title,
+    module_id: "research",
     hypothesis: entry.hypothesis,
-    parameters: entry.parameters,
-    result: entry.result,
+    analysis: entry.result,
+    scenario_snapshot: entry.parameters,
+    result_snapshot: { summary: entry.result },
   })
 
   if (error) {

@@ -74,7 +74,7 @@ The game does not require Supabase for its core loop. To enable accounts, saved 
 1. Create a Supabase project and link the `supabase/` directory.
 2. Apply the migrations in `supabase/migrations/`.
 3. Deploy the `coach` and `verify-challenge-submission` Edge Functions.
-4. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `fieldtape/.env.local` for local development, and in Vercel for production.
+4. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in `fieldtape/.env.local` for local development, and in Vercel for production.
 5. Configure the function secrets from `supabase/functions/.env.example`. Provider keys must remain server-side.
 
 The schema uses row-level security and keeps verified score submission server-side. See [supabase/README.md](supabase/README.md) for the backend guide.
