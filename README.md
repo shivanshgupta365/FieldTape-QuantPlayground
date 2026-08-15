@@ -4,7 +4,7 @@
 
 FieldTape is a public-safe, browser-based farming strategy game and quant-learning playground. Players have thirty days, a fixed action budget, and a shared market that reacts to every sale. The constraint is not merely cash: every planted tile needs attention, every expansion costs time, and every market decision changes the next one.
 
-> **Live deployment:** [fieldtape-kaggriculture.vercel.app](https://fieldtape-kaggriculture.vercel.app)
+> **Live deployment:** [fieldtape-quantplayground.vercel.app](https://fieldtape-quantplayground.vercel.app)
 
 ## What is included
 
@@ -12,7 +12,7 @@ FieldTape is a public-safe, browser-based farming strategy game and quant-learni
 - A 3D alpine village, farm board, market tape, research lab, daily challenges, and leaderboards.
 - An offline-first experience: core play works without an account or remote service.
 - Optional Supabase migrations and Edge Functions for profiles, progress, verified scores, and an in-game coach.
-- A source-grounded rules pack for the Kaggriculture simulation.
+- A source-grounded rules pack for the public farming simulation.
 
 ## Screens and routes
 
@@ -90,7 +90,7 @@ videos/     Launch-video source material
 
 ## Public boundary
 
-This repository is intentionally separate from any private competition work. It contains no private policy, opponent data, private replay payloads, competition logs, or submission code. FieldTape is an unofficial educational project inspired by Kaggle's Kaggriculture simulation; Kaggle and Kaggriculture are trademarks of their respective owners.
+This repository is intentionally separate from any private competition work. It contains no private policy, opponent data, private replay payloads, competition logs, or submission code.
 
 ## Deployment
 
