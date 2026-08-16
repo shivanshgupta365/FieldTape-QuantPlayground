@@ -1,11 +1,11 @@
 import { ArrowLeft, ArrowRight, Check, RotateCcw, Save, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { LineChart } from "../components/LineChart";
 import { SectionRule } from "../components/SectionRule";
 import { labById, labs } from "../data/labs";
 import { runLabModel } from "../lib/labModel";
-import { saveModuleProgress } from "../lib/persistence";
+import { loadModuleProgress, saveModuleProgress } from "../lib/persistence";
 
 export function LabModulePage() {
   const { moduleId } = useParams();
@@ -16,13 +16,23 @@ export function LabModulePage() {
   const [saved, setSaved] = useState(false);
   const result = useMemo(() => (lab ? runLabModel(lab, value) : null), [lab, value]);
 
+  useEffect(() => {
+    if (!lab) return
+    let current = true
+    setSaved(false)
+    void loadModuleProgress(lab.id).then((progress) => {
+      if (current) setSaved(Boolean(progress && progress.masteryScore > 0))
+    })
+    return () => { current = false }
+  }, [lab])
+
   if (!lab || !result) return <Navigate to="/lab" replace />;
   const index = labs.findIndex((item) => item.id === lab.id);
   const next = labs[(index + 1) % labs.length]!;
 
   const saveProgress = async () => {
-    await saveModuleProgress({ moduleId: lab.id, masteryScore: prediction ? 100 : 70 });
-    setSaved(true);
+    const didSave = await saveModuleProgress({ moduleId: lab.id, masteryScore: prediction ? 100 : 70 });
+    setSaved(didSave);
   };
 
   return (
@@ -76,7 +86,7 @@ export function LabModulePage() {
                 { label: "Reference", color: "#858174", values: result.baseline },
                 { label: "Experiment", color: lab.accent === "cyan" ? "#41b7ba" : lab.accent === "red" ? "#d85843" : lab.accent === "green" ? "#63895a" : "#e7a72f", values: result.experiment },
               ]} />
-              <button className="button button-outline save-run" onClick={saveProgress}>{saved ? <Check size={15} /> : <Save size={15} />}{saved ? "Saved locally" : "Save to field notes"}</button>
+              <button className="button button-outline save-run" onClick={saveProgress}>{saved ? <Check size={15} /> : <Save size={15} />}{saved ? "Saved to field notes" : "Save to field notes"}</button>
             </>
           )}
         </section>
@@ -89,4 +99,3 @@ export function LabModulePage() {
     </div>
   );
 }
-

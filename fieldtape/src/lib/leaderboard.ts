@@ -12,13 +12,10 @@ import { hasSupabase, supabase } from "./supabase"
 
 export interface BoardRow {
   rank: number
-  id: string
-  userId: string
   displayName: string
   finalMoney: number
   daysCompleted: number
   actionsUsed: number
-  createdAt: string
 }
 
 export interface BoardPage {
@@ -33,25 +30,19 @@ export const PAGE_SIZE = 25
 
 interface RawRow {
   rank: number
-  id: string
-  user_id: string
   display_name: string
   final_money: number
   days_completed: number
   actions_used: number
-  created_at: string
 }
 
 function mapRow(row: RawRow): BoardRow {
   return {
     rank: row.rank,
-    id: row.id,
-    userId: row.user_id,
     displayName: row.display_name,
     finalMoney: row.final_money,
     daysCompleted: row.days_completed,
     actionsUsed: row.actions_used,
-    createdAt: row.created_at,
   }
 }
 
@@ -71,9 +62,9 @@ export async function fetchBoardPage(page = 0): Promise<BoardPage> {
   const to = from + PAGE_SIZE - 1
 
   const { data, error, count } = await supabase
-    .from("season_leaderboard")
+    .from("season_leaderboard_public")
     .select(
-      "rank,id,user_id,display_name,final_money,days_completed,actions_used,created_at",
+      "rank,display_name,final_money,days_completed,actions_used",
       { count: "exact" },
     )
     .eq("balance_version", BRAND.balanceVersion)

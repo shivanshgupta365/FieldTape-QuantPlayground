@@ -67,6 +67,21 @@ export async function loadModuleProgress(
   }
 }
 
+export async function loadAllModuleProgress(): Promise<ModuleProgress[]> {
+  const userId = await currentUserId()
+  if (!userId || !supabase) return []
+  const { data, error } = await supabase
+    .from("user_progress")
+    .select("module_id,mastery_score,lesson_state")
+    .eq("user_id", userId)
+  if (error) return []
+  return (data ?? []).map((row) => ({
+    moduleId: row.module_id as string,
+    masteryScore: row.mastery_score as number,
+    lessonState: (row.lesson_state ?? {}) as Record<string, unknown>,
+  }))
+}
+
 export interface NotebookEntry {
   title: string
   hypothesis: string

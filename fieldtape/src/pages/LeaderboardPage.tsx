@@ -91,7 +91,7 @@ export function LeaderboardPage() {
               <span>Actions</span>
             </div>
             {rows.map((row) => (
-              <div role="row" key={row.id} className={row.rank <= 3 ? "podium" : undefined}>
+              <div role="row" key={`${row.rank}-${row.displayName}`} className={row.rank <= 3 ? "podium" : undefined}>
                 <span>
                   {row.rank <= 3 && <Medal size={14} />}
                   {String(row.rank).padStart(2, "0")}

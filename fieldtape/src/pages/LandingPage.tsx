@@ -167,7 +167,7 @@ export function LandingPage() {
               Walk the valley first
             </Link>
           </div>
-          <p className="hero-note">No download. No account needed to play.</p>
+          <p className="hero-note">No download. Set your board name once, then play.</p>
         </div>
         <HeroArt />
       </section>

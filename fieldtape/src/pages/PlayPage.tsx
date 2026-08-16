@@ -172,7 +172,7 @@ export function PlayPage() {
           <section className="coach-note">
             <Target size={17} />
             <div>
-              <span>Coach{coach && coach.source !== "local" ? ` · ${coach.source}` : ""}</span>
+              <span>{coach?.source && coach.source !== "local" ? `Coach · ${coach.source}` : "Local coach"}</span>
               <p>{coach?.advice ?? notice}</p>
               <button type="button" className="coach-ask" onClick={() => void requestCoach()} disabled={coachBusy}>
                 {coachBusy ? "Thinking…" : "Ask the coach"}

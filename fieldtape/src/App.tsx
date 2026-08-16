@@ -32,6 +32,9 @@ export function App() {
     <Suspense fallback={<LoadingTape />}><Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/join" element={<JoinPage />} />
+      <Route element={<AppShell />}>
+        <Route path="/leaderboard" element={<LeaderboardPage />} />
+      </Route>
       <Route element={<EntryGate><AppShell /></EntryGate>}>
         <Route path="/play" element={<PlayPage />} />
         <Route path="/how-to-play" element={<HowToPlayPage />} />
@@ -41,7 +44,6 @@ export function App() {
         <Route path="/lab/:moduleId" element={<LabModulePage />} />
         <Route path="/research" element={<ResearchPage />} />
         <Route path="/daily" element={<DailyPage />} />
-        <Route path="/leaderboard" element={<LeaderboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/story" element={<StoryPage />} />
       </Route>
