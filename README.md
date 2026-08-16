@@ -1,49 +1,71 @@
-# FieldTape
+# FieldTape — QuantPlayground
 
-**Farm the valley. Read the market.**
+**A strategy game for learning how capacity, capital, time, and markets interact.**
 
-FieldTape is a public-safe, browser-based farming strategy game and quant-learning playground. Players have thirty days, a fixed action budget, and a shared market that reacts to every sale. The constraint is not merely cash: every planted tile needs attention, every expansion costs time, and every market decision changes the next one.
+[Play FieldTape](https://fieldtape-quantplayground.vercel.app) · [Leaderboard](https://fieldtape-quantplayground.vercel.app/leaderboard) · [Fieldcraft](https://fieldtape-quantplayground.vercel.app/fieldcraft)
 
-> **Live deployment:** [fieldtape-quantplayground.vercel.app](https://fieldtape-quantplayground.vercel.app)
+FieldTape turns a 30-day alpine farm into a small quantitative system. Every move changes the state of the field: crops need servicing, workers create capacity, sales move a shared market, and a fixed season deadline turns planning into a real trade-off. It is a deterministic teaching simulation—not financial or agricultural advice.
 
-## What is included
+## Why it exists
 
-- A playable single-player farming season with a deterministic game engine.
-- A 3D alpine village, farm board, market tape, research lab, daily challenges, and leaderboards.
-- An offline-first experience: core play works without an account or remote service.
-- Optional Supabase migrations and Edge Functions for profiles, progress, verified scores, and an in-game coach.
-- A source-grounded rules pack for the public farming simulation.
+Most farm games make scarcity feel like a lack of coins. FieldTape makes the more interesting constraint visible: **attention**. Land only pays when workers can plant, water, harvest, and sell before the season closes.
 
-## Screens and routes
-
-| Route | Experience |
+| Farm decision | Quantitative idea |
 | --- | --- |
-| `/` | Landing page and game overview |
-| `/play` | The 30-day farming season |
-| `/village` | Explore the alpine village in 3D |
-| `/watch` | Watch a public-safe replay |
-| `/lab` | Learn through interactive market experiments |
-| `/daily` | Daily challenge surface |
-| `/leaderboard` | Public ranking board |
-| `/research` | Scenario and research notebook tools |
+| Add plots or workers | Capacity planning and constrained optimisation |
+| Buy seed or livestock | Capital allocation and opportunity cost |
+| Wait for a better quote | Inventory risk and timing |
+| Sell into the shared market | Supply impact and price response |
+| Compare a replayed run | Reproducibility and model validation |
 
 ## Product showcase
 
-| Strategy deck | Playable farming season |
+| Strategy desk | Playable farm season |
 | --- | --- |
-| ![FieldTape landing screen](fieldtape/public/product-showcase/landing.png) | ![FieldTape farming board](fieldtape/public/product-showcase/play.png) |
+| ![FieldTape strategy landing page](fieldtape/public/product-showcase/landing.png) | ![FieldTape 3D farm board](fieldtape/public/product-showcase/play.png) |
 
-| Updated 3D village — aerial | Updated 3D village — ground level |
+| Research terminal | Verified leaderboard |
 | --- | --- |
-| ![FieldTape village aerial view](fieldtape/public/product-showcase/village-air.png) | ![FieldTape village ground view](fieldtape/public/product-showcase/village-ground.png) |
+| ![FieldTape research simulation graph](fieldtape/public/product-showcase/research.png) | ![FieldTape public leaderboard](fieldtape/public/product-showcase/leaderboard.png) |
 
-| Learn — quant labs | Research terminal — 64-season graph |
+| Alpine village, aerial | Alpine village, ground level |
 | --- | --- |
-| ![FieldTape quant learning lab](fieldtape/public/product-showcase/lab.png) | ![FieldTape Research tab with a 64-season outcome graph](fieldtape/public/product-showcase/research.png) |
+| ![FieldTape alpine village aerial view](fieldtape/public/product-showcase/village-air.png) | ![FieldTape alpine village ground exploration](fieldtape/public/product-showcase/village-ground.png) |
 
-| Public-safe spectator match | Season leaderboard |
+| Interactive quant lab | Public-safe replay viewer |
 | --- | --- |
-| ![FieldTape spectator match viewer](fieldtape/public/product-showcase/watch.png) | ![FieldTape season leaderboard](fieldtape/public/product-showcase/leaderboard.png) |
+| ![FieldTape interactive lab](fieldtape/public/product-showcase/lab.png) | ![FieldTape spectator replay](fieldtape/public/product-showcase/watch.png) |
+
+## What you can do
+
+- Run a real deterministic 30-day / 720-turn farm-management season.
+- Plant, water, fertilize, harvest, clear weeds, raise livestock, feed and care for animals, sell stock, hire workers, and buy land.
+- Delegate a day to the transparent public baseline when you want to inspect an alternate strategy.
+- Post a completed season to a server-replayed public leaderboard.
+- Post server-replayed practice checkpoints after any completed day—day 1, day 13, or any other day before close—and compare only against the same duration.
+- Explore a persistent 3D alpine village with vehicles, discoveries, shops, a minimap, and fullscreen play.
+- Use Research, interactive Labs, Learn, and Fieldcraft to connect the game loop to quantitative reasoning.
+
+## Trust and privacy
+
+FieldTape uses anonymous Supabase sessions for gameplay. On first entry to an interactive route, players choose a public display name and provide a private contact email.
+
+- Only the display name is shown on public boards.
+- Email is stored only on the caller-owned profile and is not part of board queries, views, or score-verification responses.
+- A score is never trusted from the browser. The backend receives the action timeline, independently replays it with the deterministic engine, and persists only the reproduced result.
+- The verifier accepts one player action per turn, or an exact public-baseline delegation bundle, so impossible action bundles cannot become verified scores.
+- Players can delete their FieldTape profile, contact email, saved progress, and posted scores from Profile.
+
+## Architecture
+
+```text
+fieldtape/   React + TypeScript + Vite client and deterministic game engine
+supabase/    PostgreSQL migrations, RLS policies, and verify-season-run Edge Function
+rules/       Public rules pack and tooling
+videos/      Launch-video source material
+```
+
+The product is deployed as a static Vite app on Vercel. Supabase provides anonymous sessions, private profile storage, own-row progress persistence, safe public leaderboard projections, and JWT-protected replay verification.
 
 ## Run locally
 
@@ -55,7 +77,7 @@ pnpm install
 pnpm dev
 ```
 
-Vite prints the local URL (normally `http://localhost:5173`).
+Open the URL Vite prints (normally `http://localhost:5173`).
 
 ## Verify
 
@@ -67,35 +89,22 @@ pnpm build
 pnpm check:public
 ```
 
-## Optional Supabase backend
+## Connect Supabase
 
-The game does not require Supabase for its core loop. To enable accounts, saved progress, leaderboards, daily challenge verification, and the server-side coach:
+The game engine and public learning surfaces run without a backend. For anonymous profiles, saved progress, verified scores, and the live boards:
 
-1. Create a Supabase project and link the `supabase/` directory.
-2. Apply the migrations in `supabase/migrations/`.
-3. Deploy the `coach` and `verify-challenge-submission` Edge Functions.
-4. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in `fieldtape/.env.local` for local development, and in Vercel for production.
-5. Configure the function secrets from `supabase/functions/.env.example`. Provider keys must remain server-side.
+1. Create a Supabase project and enable Anonymous Sign-Ins.
+2. Apply the SQL migrations in `supabase/migrations/`.
+3. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in `fieldtape/.env.local`.
+4. Deploy `verify-season-run` with JWT verification enabled.
+5. Configure Auth redirect URLs for your Vercel domain and local development.
 
-The schema uses row-level security and keeps verified score submission server-side. See [supabase/README.md](supabase/README.md) for the backend guide.
+Never expose a Supabase service-role key in client-side variables.
 
-## Project structure
+## Contributing
 
-```text
-fieldtape/  Public React + Vite game and learning experience
-supabase/   Optional database migrations, policies, and Edge Functions
-rules/      Extracted public rules pack and tooling
-videos/     Launch-video source material
-```
-
-## Public boundary
-
-This repository is intentionally separate from any private competition work. It contains no private policy, opponent data, private replay payloads, competition logs, or submission code.
-
-## Deployment
-
-The frontend is deployed on Vercel. It is a static Vite build with SPA rewrites configured in [fieldtape/vercel.json](fieldtape/vercel.json). For a full launch checklist and public-facing copy, see [LAUNCH.md](LAUNCH.md).
+Issues and pull requests are welcome. Please run the verification suite above, preserve deterministic replay behavior, and do not add private competition data, policy code, private logs, or opponent information to this public repository.
 
 ## License
 
-[MIT](LICENSE)
+FieldTape is licensed under the [GNU Affero General Public License v3.0](LICENSE) (AGPL-3.0-only).
