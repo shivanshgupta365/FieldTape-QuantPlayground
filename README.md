@@ -67,43 +67,9 @@ videos/      Launch-video source material
 
 The product is deployed as a static Vite app on Vercel. Supabase provides anonymous sessions, private profile storage, own-row progress persistence, safe public leaderboard projections, and JWT-protected replay verification.
 
-## Run locally
-
-Prerequisites: Node.js 20+ and pnpm 9+.
-
-```bash
-cd fieldtape
-pnpm install
-pnpm dev
-```
-
-Open the URL Vite prints (normally `http://localhost:5173`).
-
-## Verify
-
-```bash
-cd fieldtape
-pnpm lint
-pnpm test
-pnpm build
-pnpm check:public
-```
-
-## Connect Supabase
-
-The game engine and public learning surfaces run without a backend. For anonymous profiles, saved progress, verified scores, and the live boards:
-
-1. Create a Supabase project and enable Anonymous Sign-Ins.
-2. Apply the SQL migrations in `supabase/migrations/`.
-3. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` in `fieldtape/.env.local`.
-4. Deploy `verify-season-run` with JWT verification enabled.
-5. Configure Auth redirect URLs for your Vercel domain and local development.
-
-Never expose a Supabase service-role key in client-side variables.
-
 ## Contributing
 
-Issues and pull requests are welcome. Please run the verification suite above, preserve deterministic replay behavior, and do not add private competition data, policy code, private logs, or opponent information to this public repository.
+Issues and pull requests are welcome. Preserve deterministic replay behavior and do not add private competition data, policy code, private logs, or opponent information to this public repository.
 
 ## License
 
