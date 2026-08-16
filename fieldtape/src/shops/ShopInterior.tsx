@@ -7,7 +7,7 @@
  * view reads better at this pixel density than a cramped diamond.
  */
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { X } from "lucide-react"
 import { PAL } from "../art/palette"
 
@@ -170,16 +170,18 @@ const PIXEL = 3
 export function ShopInterior({
   shop,
   coins,
+  purchasedItemIds,
   onBuy,
   onClose,
 }: {
   shop: ShopId
   coins: number
+  /** Persisted item keys, scoped by shop (for example bakery:pretzel). */
+  purchasedItemIds: string[]
   onBuy: (item: ShopItem) => void
   onClose: () => void
 }) {
   const ref = useRef<HTMLCanvasElement | null>(null)
-  const [bought, setBought] = useState<string[]>([])
   const def = SHOPS[shop]
 
   useEffect(() => {
@@ -234,7 +236,8 @@ export function ShopInterior({
 
         <ul className="shop-items">
           {def.items.map((item) => {
-            const owned = bought.includes(item.id)
+            const purchaseId = `${shop}:${item.id}`
+            const owned = purchasedItemIds.includes(purchaseId)
             const affordable = coins >= item.price
             return (
               <li key={item.id}>
@@ -247,7 +250,6 @@ export function ShopInterior({
                   disabled={owned || !affordable}
                   onClick={() => {
                     onBuy(item)
-                    setBought((b) => [...b, item.id])
                   }}
                 >
                   {owned ? "Bought" : affordable ? `¢${item.price}` : `¢${item.price} — short`}

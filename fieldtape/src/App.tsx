@@ -7,6 +7,7 @@ const LandingPage = lazy(() => import("./pages/LandingPage").then((module) => ({
 const PlayPage = lazy(() => import("./pages/PlayPage").then((module) => ({ default: module.PlayPage })));
 const WatchPage = lazy(() => import("./pages/WatchPage").then((module) => ({ default: module.WatchPage })));
 const LabIndexPage = lazy(() => import("./pages/LabIndexPage").then((module) => ({ default: module.LabIndexPage })));
+const LearnPage = lazy(() => import("./pages/LearnPage").then((module) => ({ default: module.LearnPage })));
 const LabModulePage = lazy(() => import("./pages/LabModulePage").then((module) => ({ default: module.LabModulePage })));
 const ResearchPage = lazy(() => import("./pages/ResearchPage").then((module) => ({ default: module.ResearchPage })));
 const DailyPage = lazy(() => import("./pages/DailyPage").then((module) => ({ default: module.DailyPage })));
@@ -34,6 +35,7 @@ export function App() {
       <Route path="/join" element={<JoinPage />} />
       <Route element={<AppShell />}>
         <Route path="/leaderboard" element={<LeaderboardPage />} />
+        <Route path="/learn" element={<LearnPage />} />
       </Route>
       <Route element={<EntryGate><AppShell /></EntryGate>}>
         <Route path="/play" element={<PlayPage />} />

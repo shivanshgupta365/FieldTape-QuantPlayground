@@ -10,7 +10,7 @@ const nav = [
   { to: "/village", label: "Village", icon: Mountain },
   { to: "/how-to-play", label: "How to play", icon: GraduationCap },
   { to: "/watch", label: "Watch", icon: Radio },
-  { to: "/lab", label: "Learn", icon: BookOpenText },
+  { to: "/learn", label: "Learn", icon: BookOpenText },
   { to: "/research", label: "Research", icon: FlaskConical },
   { to: "/leaderboard", label: "Board", icon: Trophy },
 ];
@@ -51,4 +51,3 @@ export function AppShell() {
     </div>
   );
 }
-

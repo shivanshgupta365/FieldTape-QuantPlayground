@@ -17,6 +17,7 @@ export {
 export {
   cloneGameState,
   createGame,
+  actionIssue,
   cropAge,
   currentMarketPrice,
   findTile,

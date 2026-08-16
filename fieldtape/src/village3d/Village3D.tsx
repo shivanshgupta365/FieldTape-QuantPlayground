@@ -18,6 +18,7 @@ import { Maximize2, Minimize2 } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import { DAY_PHASES } from "../art/palette"
+import { loadVillageProgress, saveVillageProgress } from "../lib/persistence"
 import { ShopInterior, type ShopId, type ShopItem } from "../shops/ShopInterior"
 import { Minimap, type MinimapHandle } from "./Minimap"
 import { buildCity, quarterAt } from "./city"
@@ -65,6 +66,8 @@ export function Village3D() {
   const [purse, setPurse] = useState(140)
   const [phaseIndex, setPhaseIndex] = useState(2)
   const [visited, setVisited] = useState<string[]>([])
+  const [purchases, setPurchases] = useState<string[]>([])
+  const [progressReady, setProgressReady] = useState(false)
   /** Mirrors player.riding for the HUD. The sim keeps its own mutable copy. */
   const [vehicle, setVehicle] = useState<string | null>(null)
   const [district, setDistrict] = useState<string | null>(null)
@@ -79,6 +82,26 @@ export function Village3D() {
   const interactRef = useRef<() => void>(() => {})
   const minimapRef = useRef<MinimapHandle | null>(null)
   const foundRef = useRef<Set<string>>(new Set())
+
+  useEffect(() => {
+    let current = true
+    void loadVillageProgress().then((progress) => {
+      if (!current) return
+      if (progress) {
+        foundRef.current = new Set(progress.discoveries)
+        setVisited(progress.discoveries)
+        setPurse(progress.purse)
+        setPurchases(progress.purchases)
+      }
+      setProgressReady(true)
+    })
+    return () => { current = false }
+  }, [])
+
+  useEffect(() => {
+    if (!progressReady) return
+    void saveVillageProgress({ discoveries: visited, purse, purchases })
+  }, [progressReady, purchases, purse, visited])
 
   useEffect(() => { phaseRef.current = phaseIndex }, [phaseIndex])
   useEffect(() => {
@@ -107,9 +130,14 @@ export function Village3D() {
   }, [])
 
   const onBuy = useCallback((item: ShopItem) => {
-    setPurse((c) => Math.max(0, c - item.price))
-    setNotice(`You bought ${item.name}.`)
-  }, [])
+    const shop = shopRef.current
+    if (!shop) return
+    const purchaseId = `${shop}:${item.id}`
+    if (purchases.includes(purchaseId) || purse < item.price) return
+    setPurse((coins) => coins - item.price)
+    setPurchases((items) => [...items, purchaseId])
+    setNotice(`You bought ${item.name}. It is saved to your field notes.`)
+  }, [purchases, purse])
 
   useEffect(() => {
     const mount = mountRef.current
@@ -733,6 +761,7 @@ export function Village3D() {
         <ShopInterior
           shop={openShop}
           coins={purse}
+          purchasedItemIds={purchases}
           onBuy={onBuy}
           onClose={() => setOpenShop(null)}
         />

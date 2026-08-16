@@ -1,13 +1,16 @@
-import { Bot, ChevronRight, CircleHelp, RotateCcw, SkipForward, Target, Wheat } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Bot, ChevronRight, CircleHelp, Heart, RotateCcw, Shovel, SkipForward, Sprout, Target, Wheat } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActionDock, type ActionId } from "../components/ActionDock";
 import { Farm3D } from "../farm3d/Farm3D";
 import type { CanvasTile } from "../farm3d/types";
 import { MarketTape, type MarketQuote } from "../components/MarketTape";
 import { StatStrip } from "../components/StatStrip";
 import {
+  ANIMAL_IDS,
+  ANIMAL_SPECS,
   CROP_IDS,
   CROP_SPECS,
+  actionIssue,
   PRODUCT_IDS,
   baselineAction,
   createGame,
@@ -17,6 +20,7 @@ import {
   selectMarketTape,
   selectScoreboard,
   stepGame,
+  type AnimalId,
   type CropId,
   type GameAction,
   type GameState,
@@ -35,8 +39,13 @@ function quotesFromState(state: GameState): MarketQuote[] {
 
 export function PlayPage() {
   const [state, setState] = useState(() => createGame({ seed: "alpstead-player-7301", playerNames: ["Your desk", "Public baseline"] }));
+  // Turn submission can be quicker than React rendering. Keep the authoritative
+  // in-memory state in lockstep with the log so a rapid double input cannot
+  // create a 720-entry timeline that disagrees with the visible game.
+  const stateRef = useRef(state);
   const [selectedId, setSelectedId] = useState<string>();
   const [active, setActive] = useState<ActionId>();
+  const [animalPickerOpen, setAnimalPickerOpen] = useState(false);
   const [notice, setNotice] = useState("Select a plot, then commit one action. Every order advances the shared clock.");
   const [sellProduct, setSellProduct] = useState<ProductId>("WHEAT");
   const [coach, setCoach] = useState<{ advice: string; source: string } | null>(null);
@@ -51,10 +60,19 @@ export function PlayPage() {
   const quotes = useMemo(() => quotesFromState(state), [state]);
   const selected = state.farms[0].tiles.find((tile) => tile.id === selectedId);
 
-  const commit = useCallback((action: GameAction) => {
-    setState((current) => dispatchHumanAction(current, action, 0, "balanced"));
+  const commit = useCallback((action: GameAction): boolean => {
+    const current = stateRef.current;
+    const issue = actionIssue(current, action, 0);
+    if (issue) {
+      setNotice(`Order not sent: ${issue}. No clock tick was used.`);
+      return false;
+    }
+    const next = dispatchHumanAction(current, action, 0, "balanced");
+    stateRef.current = next;
+    setState(next);
     setActionLog((current) => [...current, [action]]);
     setNotice(`Committed ${action.type}. The public baseline moved at the same clock tick.`);
+    return true;
   }, []);
 
   const handleAction = useCallback((action: ActionId) => {
@@ -63,7 +81,6 @@ export function PlayPage() {
     if (action === "land") { commit({ type: "buyLand" }); return; }
     if (action === "sell") {
       const amount = state.farms[0].stock[sellProduct];
-      if (amount <= 0) { setNotice(`No ${sellProduct.toLowerCase()} is available to sell.`); return; }
       commit({ type: "sell", product: sellProduct, amount });
       return;
     }
@@ -89,8 +106,13 @@ export function PlayPage() {
     setActive(undefined);
   };
 
+  const placeAnimal = (animal: AnimalId) => {
+    if (!selectedId) return setNotice("Choose an unlocked empty plot first.");
+    if (commit({ type: "placeAnimal", tileId: selectedId, animal })) setAnimalPickerOpen(false);
+  };
+
   const delegateDay = () => {
-      let next = state;
+      let next = stateRef.current;
       const delegated: GameAction[][] = [];
       const target = Math.min(next.config.days * next.config.turnsPerDay, (Math.floor(next.turn / 24) + 1) * 24);
       while (next.status === "running" && next.turn < target) {
@@ -98,6 +120,7 @@ export function PlayPage() {
         delegated.push([...action])
         next = stepGame(next, { 0: action, 1: baselineAction(next, 1, "balanced") })
       }
+    stateRef.current = next;
     setState(next);
     setActionLog((current) => [...current, ...delegated]);
     setNotice("The transparent steady baseline completed the remaining moves for this day.");
@@ -145,7 +168,7 @@ export function PlayPage() {
         <div className="game-mode"><span>PLAY / HUMAN VS PUBLIC BASELINE</span><strong>SEED {state.seed.toString(16).toUpperCase()}</strong></div>
         <div className="clock-block"><span>DAY</span><b>{clock.displayDay.toString().padStart(2, "0")}</b><i>/ 30</i><span>TURN</span><b>{clock.hour.toString().padStart(2, "0")}</b><i>/ 24</i></div>
         <div className="lead-block"><span>BANK LEAD</span><b className={score[0].lead >= 0 ? "positive" : "negative"}>{score[0].lead >= 0 ? "+" : ""}¢{score[0].lead.toLocaleString()}</b><small>margin shown; outcome is W/L/tie</small></div>
-        <button className="reset-game" onClick={() => { setState(createGame({ seed: "alpstead-player-7301", playerNames: ["Your desk", "Public baseline"] })); setActionLog([]); setSelectedId(undefined); }}><RotateCcw size={14} /> Restart</button>
+        <button className="reset-game" onClick={() => { const next = createGame({ seed: "alpstead-player-7301", playerNames: ["Your desk", "Public baseline"] }); stateRef.current = next; setState(next); setActionLog([]); setSelectedId(undefined); }}><RotateCcw size={14} /> Restart</button>
       </header>
 
       <div className="play-layout">
@@ -182,8 +205,16 @@ export function PlayPage() {
 
           <section className="selected-inspector">
             <header><span>SELECTED PLOT</span><b>{selected ? `(${selected.x + 1}, ${selected.y + 1})` : "—"}</b></header>
-            {selected ? <div><strong>{selected.content ? selected.content.kind === "crop" ? selected.content.crop : selected.content.kind === "animal" ? selected.content.animal : "WEED" : "EMPTY SOIL"}</strong><small>{selected.locked ? "Locked quadrant" : selected.content?.kind === "crop" ? `Age ${state.day - selected.content.plantedDay} days · ${selected.content.wateredToday ? "watered" : "dry"}` : "Available for planting"}</small></div> : <p>Click any open plot to inspect its state and place an order.</p>}
+            {selected ? <div><strong>{selected.content ? selected.content.kind === "crop" ? selected.content.crop : selected.content.kind === "animal" ? selected.content.animal : "WEED" : "EMPTY SOIL"}</strong><small>{selected.locked ? "Locked quadrant" : selected.content?.kind === "crop" ? `Age ${state.day - selected.content.plantedDay} days · ${selected.content.wateredToday ? "watered" : "dry"}${selected.content.fertilizedUntilDay >= state.day ? " · fertilized" : ""}` : selected.content?.kind === "animal" ? `${selected.content.fedToday ? "fed" : "needs feed"} · ${selected.content.caredToday ? "cared" : "care available"} · ${selected.content.yieldUnits} ready` : selected.content?.kind === "weed" ? "Clear this plot before planting." : "Available for planting or livestock"}</small></div> : <p>Click any open plot to inspect its state and place an order.</p>}
           </section>
+
+          {selected && !selected.locked && <section className="plot-actions" aria-label="Selected plot actions">
+            <header><span>PLOT ACTIONS</span><b>1 clock tick each</b></header>
+            {selected.content?.kind === "crop" && <div><button type="button" onClick={() => commit({ type: "water", tileId: selected.id })}><Wheat size={14} /> Water</button><button type="button" onClick={() => commit({ type: "fertilize", tileId: selected.id })}><Sprout size={14} /> Fertilize · {state.farms[0].stock.FERTILIZER}</button><button type="button" onClick={() => commit({ type: "harvest", tileId: selected.id })}><Shovel size={14} /> Harvest</button></div>}
+            {selected.content?.kind === "animal" && <div><button type="button" onClick={() => commit({ type: "feed", tileId: selected.id })}><Wheat size={14} /> Feed</button><button type="button" onClick={() => commit({ type: "care", tileId: selected.id })}><Heart size={14} /> Care</button><button type="button" onClick={() => commit({ type: "harvest", tileId: selected.id })}><Shovel size={14} /> Collect</button></div>}
+            {selected.content?.kind === "weed" && <div><button type="button" onClick={() => commit({ type: "clear", tileId: selected.id })}><Shovel size={14} /> Clear weed</button></div>}
+            {!selected.content && <div><button type="button" onClick={() => setAnimalPickerOpen(true)}><Heart size={14} /> Add livestock</button><small>Livestock produces fertilizer after each nightly check.</small></div>}
+          </section>}
 
           <section className="inventory-panel"><header><span>PUBLIC DESK INVENTORY</span><select aria-label="Product to sell" value={sellProduct} onChange={(event) => setSellProduct(event.target.value as ProductId)}>{PRODUCT_IDS.map((product) => <option key={product} value={product}>{product} · {state.farms[0].stock[product]}u</option>)}</select></header><div className="inventory-grid">{PRODUCT_IDS.slice(0, 8).map((product) => <div key={product}><span>{symbols[product] ?? product.slice(0, 3)}</span><b>{state.farms[0].stock[product]}</b></div>)}</div></section>
 
@@ -195,10 +226,11 @@ export function PlayPage() {
       <div className="play-command-bar">
         <ActionDock active={active} onAction={handleAction} />
         {active === "plant" && <div className="crop-picker" role="dialog" aria-label="Choose crop"><header><Wheat size={15} /><span>Choose seed for plot {selectedId ?? "—"}</span><button onClick={() => setActive(undefined)}>×</button></header><div>{CROP_IDS.map((crop) => <button key={crop} disabled={!selectedId || state.farms[0].money < CROP_SPECS[crop].seedCost} onClick={() => plant(crop)}><strong>{cropNames[crop]}</strong><span>¢{CROP_SPECS[crop].seedCost}</span><small>{CROP_SPECS[crop].firstYieldDay}d first yield</small></button>)}</div></div>}
+        {animalPickerOpen && <div className="crop-picker" role="dialog" aria-label="Choose livestock"><header><Heart size={15} /><span>Add livestock to plot {selectedId ?? "—"}</span><button onClick={() => setAnimalPickerOpen(false)}>×</button></header><div className="animal-picker">{ANIMAL_IDS.map((animal) => <button key={animal} disabled={!selectedId || state.farms[0].money < ANIMAL_SPECS[animal].cost} onClick={() => placeAnimal(animal)}><strong>{animal[0]}{animal.slice(1).toLowerCase()}</strong><span>¢{ANIMAL_SPECS[animal].cost}</span><small>{ANIMAL_SPECS[animal].product} from day {ANIMAL_SPECS[animal].firstYieldDay}</small></button>)}</div></div>}
         <button className="pass-action" onClick={() => commit({ type: "wait" })} disabled={finished}>Pass move <ChevronRight size={15} /></button>
       </div>
 
-      {finished && <div className="season-result" role="dialog" aria-modal="true"><span>SEASON CLOSED</span><h2>{score[0].money > score[1].money ? "You finished ahead." : score[0].money === score[1].money ? "The desks tied." : "The baseline finished ahead."}</h2><p>Your bank: ¢{score[0].money.toLocaleString()} · Baseline: ¢{score[1].money.toLocaleString()}</p><button className="button button-gold" onClick={() => void postScore()} disabled={posting || actionLog.length !== state.config.days * state.config.turnsPerDay}>{posting ? "Verifying…" : "Post verified score"}</button>{postNotice && <p>{postNotice}</p>}<button className="button" onClick={() => { setState(createGame({ seed: Date.now(), playerNames: ["Your desk", "Public baseline"] })); setActionLog([]); setPostNotice("") }}>Run a new seed</button></div>}
+      {finished && <div className="season-result" role="dialog" aria-modal="true"><span>SEASON CLOSED</span><h2>{score[0].money > score[1].money ? "You finished ahead." : score[0].money === score[1].money ? "The desks tied." : "The baseline finished ahead."}</h2><p>Your bank: ¢{score[0].money.toLocaleString()} · Baseline: ¢{score[1].money.toLocaleString()}</p><button className="button button-gold" onClick={() => void postScore()} disabled={posting || actionLog.length !== state.config.days * state.config.turnsPerDay}>{posting ? "Verifying…" : "Post verified score"}</button>{postNotice && <p>{postNotice}</p>}<button className="button" onClick={() => { const next = createGame({ seed: Date.now(), playerNames: ["Your desk", "Public baseline"] }); stateRef.current = next; setState(next); setActionLog([]); setPostNotice("") }}>Run a new seed</button></div>}
     </div>
   );
 }

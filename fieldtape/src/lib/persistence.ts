@@ -24,6 +24,49 @@ export interface ModuleProgress {
   lessonState?: Record<string, unknown>
 }
 
+const VILLAGE_PROGRESS_MODULE = "village-exploration"
+const VILLAGE_STARTING_PURSE = 140
+
+export interface VillageProgress {
+  discoveries: string[]
+  purse: number
+  purchases: string[]
+}
+
+/**
+ * Village state is stored alongside the other player-owned progress.  The
+ * compact JSON payload keeps this optional side experience out of the farm
+ * scoring model while still letting an anonymous player resume it after a
+ * reload or a route change.
+ */
+export async function loadVillageProgress(): Promise<VillageProgress | null> {
+  const progress = await loadModuleProgress(VILLAGE_PROGRESS_MODULE)
+  if (!progress) return null
+  const state = progress.lessonState ?? {}
+  const discoveries = Array.isArray(state.discoveries)
+    ? state.discoveries.filter((id): id is string => typeof id === "string")
+    : []
+  const purchases = Array.isArray(state.purchases)
+    ? state.purchases.filter((id): id is string => typeof id === "string")
+    : []
+  const purse = typeof state.purse === "number" && Number.isFinite(state.purse)
+    ? Math.max(0, Math.floor(state.purse))
+    : VILLAGE_STARTING_PURSE
+  return { discoveries, purse, purchases }
+}
+
+export async function saveVillageProgress(progress: VillageProgress): Promise<boolean> {
+  return saveModuleProgress({
+    moduleId: VILLAGE_PROGRESS_MODULE,
+    masteryScore: progress.discoveries.length,
+    lessonState: {
+      discoveries: [...new Set(progress.discoveries)],
+      purse: Math.max(0, Math.floor(progress.purse)),
+      purchases: [...new Set(progress.purchases)],
+    },
+  })
+}
+
 export async function saveModuleProgress(progress: ModuleProgress): Promise<boolean> {
   const userId = await currentUserId()
   if (!userId || !supabase) return false

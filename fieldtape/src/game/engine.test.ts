@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest"
 import { MARKET_CURVES } from "./constants"
 import {
   baselineAction,
+  actionIssue,
   createGame,
   generateDemoReplay,
   marketPriceFromSupply,
@@ -14,6 +15,18 @@ import {
 } from "./index"
 
 describe("Alpstead deterministic engine", () => {
+  it("preflights rejected player orders without advancing the clock", () => {
+    const initial = createGame({ seed: "preflight" })
+    expect(actionIssue(initial, { type: "water", tileId: "0:0" })).toBe(
+      "only crops can be watered",
+    )
+    expect(actionIssue(initial, { type: "clear", tileId: "0:0" })).toBe(
+      "only weeds can be cleared",
+    )
+    expect(initial.turn).toBe(0)
+    expect(initial.eventLog).toHaveLength(0)
+  })
+
   it("keeps transitions pure and enforces the worker ceiling", () => {
     const initial = createGame({ seed: 11 })
     const next = stepGame(initial, {

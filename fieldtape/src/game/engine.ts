@@ -208,6 +208,93 @@ export function isHarvestable(state: GameState, content: TileContent): boolean {
   return content.yieldUnits > 0 && cropAge(state, content) >= spec.firstYieldDay
 }
 
+/**
+ * Preflight one player order without changing the clock. The interactive client
+ * uses this before dispatching so a typo or stale plot selection cannot become a
+ * rejected replay turn. The engine still validates every action at execution
+ * time because replays and other callers are untrusted.
+ */
+export function actionIssue(
+  state: GameState,
+  action: GameAction,
+  playerId: PlayerId = 0,
+): string | null {
+  if (state.status !== "running") return "the season is already closed"
+  const farm = state.farms[playerId]
+  const tileFor = (id: string): FarmTile | string => {
+    const tile = findTile(farm, id)
+    if (!tile) return "unknown plot"
+    if (tile.locked) return "buy this quadrant first"
+    return tile
+  }
+  const requireTile = (id: string): FarmTile | string => tileFor(id)
+
+  switch (action.type) {
+    case "wait":
+      return null
+    case "plant": {
+      const tile = requireTile(action.tileId)
+      if (typeof tile === "string") return tile
+      if (tile.content) return "that plot is occupied"
+      return farm.money < CROP_SPECS[action.crop].seedCost ? "insufficient cash" : null
+    }
+    case "water": {
+      const tile = requireTile(action.tileId)
+      if (typeof tile === "string") return tile
+      if (tile.content?.kind !== "crop") return "only crops can be watered"
+      return tile.content.wateredToday ? "that crop is already watered today" : null
+    }
+    case "fertilize": {
+      const tile = requireTile(action.tileId)
+      if (typeof tile === "string") return tile
+      if (tile.content?.kind !== "crop") return "only crops can be fertilized"
+      return farm.stock.FERTILIZER < 1 ? "no fertilizer in stock" : null
+    }
+    case "harvest": {
+      const tile = requireTile(action.tileId)
+      if (typeof tile === "string") return tile
+      return tile.content && isHarvestable(state, tile.content) ? null : "nothing is ready to harvest"
+    }
+    case "clear": {
+      const tile = requireTile(action.tileId)
+      if (typeof tile === "string") return tile
+      return tile.content?.kind === "weed" ? null : "only weeds can be cleared"
+    }
+    case "placeAnimal": {
+      const tile = requireTile(action.tileId)
+      if (typeof tile === "string") return tile
+      if (tile.content) return "that plot is occupied"
+      return farm.money < ANIMAL_SPECS[action.animal].cost ? "insufficient cash" : null
+    }
+    case "feed": {
+      const tile = requireTile(action.tileId)
+      if (typeof tile === "string") return tile
+      if (tile.content?.kind !== "animal") return "only livestock can be fed"
+      if (tile.content.fedToday) return "that animal is already fed today"
+      return farm.stock.WHEAT > 0 || farm.money >= state.market.prices.WHEAT
+        ? null
+        : "no wheat and insufficient cash"
+    }
+    case "care": {
+      const tile = requireTile(action.tileId)
+      if (typeof tile === "string") return tile
+      if (tile.content?.kind !== "animal") return "only livestock can be cared for"
+      return tile.content.caredToday ? "that animal is already cared for today" : null
+    }
+    case "sell":
+      if (!Number.isFinite(action.amount) || Math.floor(action.amount) < 1) return "choose at least one unit to sell"
+      return farm.stock[action.product] > 0 ? null : `no ${action.product.toLowerCase()} is available to sell`
+    case "hire":
+      return farm.money < hireCost(farm.hiresToday) ? "insufficient cash to hire" : null
+    case "buyLand": {
+      const extraUnlocked = farm.unlockedQuadrants.length - 1
+      const cost = LAND_PRICES[extraUnlocked]
+      if (cost === undefined) return "all quadrants are already owned"
+      return farm.money < cost ? "insufficient cash to buy land" : null
+    }
+  }
+}
+
 function unlockedTile(
   state: GameState,
   playerId: PlayerId,

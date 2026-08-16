@@ -17,7 +17,7 @@ export function VillagePage() {
       <p className="village-caption">
         Ninety-six squares of valley. Walk up to the ridge viewpoint, take the
         jetty out over the lake, drive a tractor through the orchard terraces, or
-        find the old mill. Ten places to discover, and nothing on a timer.
+        find the old mill. Twenty-five places to discover, and nothing on a timer.
       </p>
     </div>
   )
