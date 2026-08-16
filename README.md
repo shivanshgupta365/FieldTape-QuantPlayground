@@ -27,6 +27,7 @@
 FieldTape turns a 30-day alpine farm into a compact quantitative system. You do not just run out of money—you run out of **attention**. Every plot needs action, every worker changes the capacity ceiling, and every sale can move the shared market for the next decision.
 
 It is a deterministic strategy and learning simulation. It is not agricultural, financial, or investment advice.
+Built under 5hrs in OpenAI Codex Hackathon Solo.
 
 | Farm decision | Quantitative idea |
 | --- | --- |
