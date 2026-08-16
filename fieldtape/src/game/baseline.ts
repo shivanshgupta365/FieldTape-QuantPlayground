@@ -1,5 +1,5 @@
-import { ANIMAL_SPECS, CROP_SPECS, PRODUCT_IDS, hireCost } from "./constants"
-import { isHarvestable, stepGame } from "./engine"
+import { ANIMAL_SPECS, CROP_SPECS, PRODUCT_IDS, hireCost } from "./constants.ts"
+import { isHarvestable, stepGame } from "./engine.ts"
 import type {
   BaselineStyle,
   CropId,
@@ -10,7 +10,7 @@ import type {
   PlayerId,
   ProductId,
   RunGameOptions,
-} from "./types"
+} from "./types.ts"
 
 function occupiedTiles(farm: FarmState): FarmTile[] {
   return farm.tiles.filter((tile) => !tile.locked && tile.content !== null)

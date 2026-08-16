@@ -10,14 +10,14 @@ import {
   SHOP_IDS,
   SHOP_PRODUCTS,
   hireCost,
-} from "./constants"
+} from "./constants.ts"
 import {
   consumeMarketSupply,
   createMarket,
   marketPriceFromSupply,
   sellIntoMarket,
-} from "./market"
-import { hashSeed, nextRandom, randomInt } from "./rng"
+} from "./market.ts"
+import { hashSeed, nextRandom, randomInt } from "./rng.ts"
 import type {
   AnimalPlot,
   CreateGameOptions,
@@ -34,7 +34,7 @@ import type {
   ShopId,
   TileContent,
   TurnInput,
-} from "./types"
+} from "./types.ts"
 
 const PLAYERS = [0, 1] as const
 const MAX_SHOP_INSTANCES = 8

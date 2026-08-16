@@ -5,7 +5,7 @@ import type {
   ProductId,
   QuadrantId,
   ShopId,
-} from "./types"
+} from "./types.ts"
 
 export interface CropSpec {
   seedCost: number

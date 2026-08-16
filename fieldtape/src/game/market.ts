@@ -1,6 +1,6 @@
-import { MARKET_CURVES, PRODUCT_IDS } from "./constants"
-import type { MarketShape, MarketCurve } from "./constants"
-import type { MarketState, ProductId } from "./types"
+import { MARKET_CURVES, PRODUCT_IDS } from "./constants.ts"
+import type { MarketShape, MarketCurve } from "./constants.ts"
+import type { MarketState, ProductId } from "./types.ts"
 
 function shape(kind: MarketShape, input: number): number {
   const value = Math.max(0, input)
