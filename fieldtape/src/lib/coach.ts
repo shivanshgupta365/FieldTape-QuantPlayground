@@ -1,15 +1,9 @@
 /**
  * In-game coach client.
  *
- * Calls the `coach` edge function, which holds the provider keys. The browser
- * never sees an API key — anything a `VITE_` variable touches is compiled into
- * the bundle and readable by any visitor.
- *
- * Degrades to built-in advice when no provider is configured or the network
- * fails, so the coach panel is never empty and never blocks play.
+ * FieldTape ships with a deterministic local coach. It never sends a player's
+ * in-progress farm state to an undeployed third-party service.
  */
-
-import { hasSupabase, supabase } from "./supabase"
 
 export interface CoachState {
   day: number
@@ -61,19 +55,5 @@ export function localAdvice(state: CoachState): string {
 }
 
 export async function askCoach(state: CoachState): Promise<CoachReply> {
-  if (!hasSupabase || !supabase) {
-    return { advice: localAdvice(state), source: "local" }
-  }
-
-  try {
-    const { data, error } = await supabase.functions.invoke("coach", { body: state })
-    if (error) throw new Error(error.message)
-    const reply = data as { advice?: string; provider?: string }
-    if (!reply?.advice) throw new Error("empty advice")
-    return { advice: reply.advice, source: reply.provider ?? "server" }
-  } catch {
-    // Never surface an LLM outage as a broken UI. The local coach is good
-    // enough that most players will not notice which one answered.
-    return { advice: localAdvice(state), source: "local" }
-  }
+  return { advice: localAdvice(state), source: "local" }
 }

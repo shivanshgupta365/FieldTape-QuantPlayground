@@ -1,14 +1,15 @@
 import { BRAND } from "../brand";
 import { MusicDock } from "./MusicDock";
-import { BookOpenText, FlaskConical, Gamepad2, GraduationCap, Menu, Mountain, Radio, Trophy, X } from "lucide-react";
+import { BookOpenText, FlaskConical, Gamepad2, GraduationCap, Menu, Mountain, Radio, Telescope, Trophy, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import { BrandMark } from "./BrandMark";
 
 const nav = [
   { to: "/play", label: "Play", icon: Gamepad2 },
   { to: "/village", label: "Village", icon: Mountain },
   { to: "/how-to-play", label: "How to play", icon: GraduationCap },
+  { to: "/fieldcraft", label: "Fieldcraft", icon: Telescope },
   { to: "/watch", label: "Watch", icon: Radio },
   { to: "/learn", label: "Learn", icon: BookOpenText },
   { to: "/research", label: "Research", icon: FlaskConical },
@@ -24,7 +25,7 @@ export function AppShell() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <BrandMark size={30} />
+        <Link className="brand-home" to="/" aria-label="Return to FieldTape home"><BrandMark size={30} /></Link>
         <button className="menu-button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-label="Toggle navigation">
           {open ? <X size={20} /> : <Menu size={20} />}
         </button>

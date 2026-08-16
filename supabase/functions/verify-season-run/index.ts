@@ -45,14 +45,19 @@ export default {
     const profile = await admin.from("profiles").select("display_name").eq("user_id", userId).maybeSingle();
     if (profile.error) return reply(503, { reason: "profile lookup failed" });
     if (!profile.data) return reply(409, { reason: "complete your public profile first" });
-    let state = createGame({ seed: Number(payload.seed), playerNames: ["Your desk", "Public baseline"] });
+    const seed = Number(payload.seed);
+    if (!Number.isFinite(seed)) return reply(422, { reason: "seed must be a finite number" });
+    let state = createGame({ seed, playerNames: ["Your desk", "Public baseline"] });
     try {
       for (const playerActions of turns) state = stepGame(state, { 0: playerActions, 1: baselineAction(state, 1, "balanced") });
     } catch { return reply(422, { reason: "the submitted action log cannot be replayed" }); }
     if (state.status !== "finished" || state.engineVersion !== ENGINE_VERSION) return reply(422, { reason: "season did not finish" });
-    const runHash = await sha256({ seed: String(state.seed), balanceVersion: BALANCE_VERSION, actionLog: turns });
+    // Idempotency belongs to one player. Identical deterministic moves from two
+    // different people must create two legitimate board entries, while a retry
+    // from the same player remains a no-op.
+    const runHash = await sha256({ userId, seed: String(state.seed), balanceVersion: BALANCE_VERSION, actionLog: turns });
     const actionCount = turns.reduce((count, turn) => count + turn.length, 0);
-    const existing = await admin.from("season_runs").select("id").eq("run_hash", runHash).maybeSingle();
+    const existing = await admin.from("season_runs").select("id").eq("user_id", userId).eq("run_hash", runHash).maybeSingle();
     let runId = existing.data?.id as string | undefined;
     if (!runId) {
       const quota = await admin.rpc("consume_challenge_submission_quota", { p_user_id: userId, p_limit: 12, p_window_seconds: 900 }).single();
@@ -61,7 +66,7 @@ export default {
       const inserted = await admin.from("season_runs").insert({ user_id: userId, display_name: profile.data.display_name, balance_version: BALANCE_VERSION, seed: String(state.seed), final_money: state.farms[0].money, days_completed: state.day, actions_used: actionCount, action_log: turns, run_hash: runHash, verified: true, verifier_version: "season-replay-v1", verified_at: new Date().toISOString() }).select("id").single();
       if (inserted.error) {
         if (inserted.error.code !== "23505") return reply(503, { reason: "verified score could not be stored" });
-        const retry = await admin.from("season_runs").select("id").eq("run_hash", runHash).single();
+        const retry = await admin.from("season_runs").select("id").eq("user_id", userId).eq("run_hash", runHash).single();
         if (retry.error) return reply(503, { reason: "verified score could not be stored" });
         runId = retry.data.id;
       } else runId = inserted.data.id;
