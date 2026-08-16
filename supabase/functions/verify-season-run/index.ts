@@ -1,7 +1,7 @@
 import "@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "@supabase/server";
 import { baselineAction } from "../../../fieldtape/src/game/baseline.ts";
-import { createGame, stepGame } from "../../../fieldtape/src/game/engine.ts";
+import { actionIssue, createGame, stepGame } from "../../../fieldtape/src/game/engine.ts";
 import { ENGINE_VERSION } from "../../../fieldtape/src/game/constants.ts";
 import type { GameAction } from "../../../fieldtape/src/game/types.ts";
 
@@ -26,6 +26,22 @@ function actionLog(value: unknown, runKind: "season" | "practice"): GameAction[]
     entries.push(turn as GameAction[]);
   }
   return entries;
+}
+
+/**
+ * The browser can make one deliberate order per clock tick. Its only bundled
+ * order is the visible "delegate day" control, which always uses the public
+ * steady baseline. Keeping that distinction server-side prevents callers from
+ * fabricating worker/market bundles that the product never offers.
+ */
+function isPlayerTurn(state: ReturnType<typeof createGame>, actions: GameAction[]): boolean {
+  const delegated = baselineAction(state, 0, "steady");
+  if (JSON.stringify(actions) === JSON.stringify(delegated)) return true;
+  if (actions.length !== 1) return false;
+  const [action] = actions;
+  if (!action) return false;
+  if (action.type === "sell" && action.amount !== state.farms[0].stock[action.product]) return false;
+  return actionIssue(state, action, 0) === null;
 }
 
 async function sha256(value: unknown): Promise<string> {
@@ -54,7 +70,10 @@ export default {
     if (!Number.isFinite(seed)) return reply(422, { reason: "seed must be a finite number" });
     let state = createGame({ seed, playerNames: ["Your desk", "Public baseline"] });
     try {
-      for (const playerActions of turns) state = stepGame(state, { 0: playerActions, 1: baselineAction(state, 1, "balanced") });
+      for (const playerActions of turns) {
+        if (!isPlayerTurn(state, playerActions)) return reply(422, { reason: "action log contains an order pattern unavailable in Play" });
+        state = stepGame(state, { 0: playerActions, 1: baselineAction(state, 1, "balanced") });
+      }
     } catch { return reply(422, { reason: "the submitted action log cannot be replayed" }); }
     if ((runKind === "season" && state.status !== "finished") || state.engineVersion !== ENGINE_VERSION) return reply(422, { reason: "season did not finish" });
     // Idempotency belongs to one player. Identical deterministic moves from two

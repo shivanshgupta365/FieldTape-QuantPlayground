@@ -110,14 +110,14 @@ export function PlayPage() {
     if (action === "hire") { commit({ type: "hire" }); return; }
     if (action === "land") { commit({ type: "buyLand" }); return; }
     if (action === "sell") {
-      const amount = state.farms[0].stock[sellProduct];
+      const amount = stateRef.current.farms[0].stock[sellProduct];
       commit({ type: "sell", product: sellProduct, amount });
       return;
     }
     if (!selectedId) { setNotice(`Choose an unlocked plot before using ${action}.`); return; }
     if (action === "water") commit({ type: "water", tileId: selectedId });
     if (action === "harvest") commit({ type: "harvest", tileId: selectedId });
-  }, [commit, selectedId, sellProduct, state.farms]);
+  }, [commit, selectedId, sellProduct]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
