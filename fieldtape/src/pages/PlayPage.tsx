@@ -29,6 +29,7 @@ import {
 import { canvasTilesFromState } from "../lib/gameView";
 import { askCoach, localAdvice } from "../lib/coach";
 import { submitRun } from "../lib/leaderboard";
+import { loadPlayTimeSeconds, savePlayTimeSeconds } from "../lib/persistence";
 
 const cropNames: Record<CropId, string> = { WHEAT: "Wheat", CARROT: "Carrot", TOMATO: "Tomato", STRAWBERRY: "Strawberry", MELON: "Melon" };
 const symbols: Record<string, string> = { WHEAT: "WHT", CARROT: "CRT", TOMATO: "TOM", STRAWBERRY: "STR", MELON: "MLN" };
@@ -43,6 +44,7 @@ export function PlayPage() {
   // in-memory state in lockstep with the log so a rapid double input cannot
   // create a 720-entry timeline that disagrees with the visible game.
   const stateRef = useRef(state);
+  const playTimeRef = useRef({ total: 0, checkpoint: Date.now(), ready: false });
   const [selectedId, setSelectedId] = useState<string>();
   const [active, setActive] = useState<ActionId>();
   const [animalPickerOpen, setAnimalPickerOpen] = useState(false);
@@ -59,6 +61,32 @@ export function PlayPage() {
   const board = useMemo(() => canvasTilesFromState(state, 0), [state]);
   const quotes = useMemo(() => quotesFromState(state), [state]);
   const selected = state.farms[0].tiles.find((tile) => tile.id === selectedId);
+
+  useEffect(() => {
+    let active = true;
+    void loadPlayTimeSeconds().then((total) => {
+      if (!active) return;
+      playTimeRef.current.total = total;
+      playTimeRef.current.ready = true;
+    });
+    const flushPlayTime = () => {
+      const tracker = playTimeRef.current;
+      if (document.visibilityState !== "visible") { tracker.checkpoint = Date.now(); return; }
+      const now = Date.now();
+      const elapsed = Math.max(0, Math.floor((now - tracker.checkpoint) / 1000));
+      tracker.checkpoint = now;
+      if (!tracker.ready || elapsed < 1) return;
+      tracker.total += elapsed;
+      void savePlayTimeSeconds(tracker.total);
+    };
+    const handleVisibility = () => {
+      if (document.visibilityState === "hidden") flushPlayTime();
+      else playTimeRef.current.checkpoint = Date.now();
+    };
+    const interval = window.setInterval(flushPlayTime, 30_000);
+    window.addEventListener("visibilitychange", handleVisibility);
+    return () => { active = false; window.clearInterval(interval); window.removeEventListener("visibilitychange", handleVisibility); flushPlayTime(); };
+  }, []);
 
   const commit = useCallback((action: GameAction): boolean => {
     const current = stateRef.current;
@@ -230,7 +258,7 @@ export function PlayPage() {
         <button className="pass-action" onClick={() => commit({ type: "wait" })} disabled={finished}>Pass move <ChevronRight size={15} /></button>
       </div>
 
-      {finished && <div className="season-result" role="dialog" aria-modal="true"><span>SEASON CLOSED</span><h2>{score[0].money > score[1].money ? "You finished ahead." : score[0].money === score[1].money ? "The desks tied." : "The baseline finished ahead."}</h2><p>Your bank: ¢{score[0].money.toLocaleString()} · Baseline: ¢{score[1].money.toLocaleString()}</p><button className="button button-gold" onClick={() => void postScore()} disabled={posting || actionLog.length !== state.config.days * state.config.turnsPerDay}>{posting ? "Verifying…" : "Post verified score"}</button>{postNotice && <p>{postNotice}</p>}<button className="button" onClick={() => { const next = createGame({ seed: Date.now(), playerNames: ["Your desk", "Public baseline"] }); stateRef.current = next; setState(next); setActionLog([]); setPostNotice("") }}>Run a new seed</button></div>}
+      {finished && <div className="season-result" role="dialog" aria-modal="true"><span>SEASON CLOSED · 30 DAYS COMPLETE</span><h2>{score[0].money > score[1].money ? "You finished ahead." : score[0].money === score[1].money ? "The desks tied." : "The baseline finished ahead."}</h2><p>Your bank: ¢{score[0].money.toLocaleString()} · Baseline: ¢{score[1].money.toLocaleString()}</p><p className="season-post-note">All 720 turns are recorded. Post this completed season for server replay and public ranking.</p><button className="button button-gold" onClick={() => void postScore()} disabled={posting || actionLog.length !== state.config.days * state.config.turnsPerDay}>{posting ? "Verifying…" : "Post verified score"}</button>{postNotice && <p>{postNotice}</p>}<button className="button" onClick={() => { const next = createGame({ seed: Date.now(), playerNames: ["Your desk", "Public baseline"] }); stateRef.current = next; setState(next); setActionLog([]); setPostNotice("") }}>Run a new seed</button></div>}
     </div>
   );
 }

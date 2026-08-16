@@ -26,6 +26,7 @@ export interface ModuleProgress {
 
 const VILLAGE_PROGRESS_MODULE = "village-exploration"
 const VILLAGE_STARTING_PURSE = 140
+const PLAY_TIME_MODULE = "play-time"
 
 export interface VillageProgress {
   discoveries: string[]
@@ -64,6 +65,21 @@ export async function saveVillageProgress(progress: VillageProgress): Promise<bo
       purse: Math.max(0, Math.floor(progress.purse)),
       purchases: [...new Set(progress.purchases)],
     },
+  })
+}
+
+/** Private accumulated active time spent on the Play route, in seconds. */
+export async function loadPlayTimeSeconds(): Promise<number> {
+  const progress = await loadModuleProgress(PLAY_TIME_MODULE)
+  const seconds = progress?.lessonState?.seconds
+  return typeof seconds === "number" && Number.isFinite(seconds) ? Math.max(0, Math.floor(seconds)) : 0
+}
+
+export async function savePlayTimeSeconds(seconds: number): Promise<boolean> {
+  return saveModuleProgress({
+    moduleId: PLAY_TIME_MODULE,
+    masteryScore: 0,
+    lessonState: { seconds: Math.max(0, Math.floor(seconds)) },
   })
 }
 
