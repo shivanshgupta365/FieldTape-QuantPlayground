@@ -6,8 +6,8 @@ const actions: { id: ActionId; label: string; hint: string; icon: typeof Sprout 
   { id: "plant", label: "Plant", hint: "10–80¢", icon: Sprout },
   { id: "water", label: "Water", hint: "1 move", icon: Droplets },
   { id: "harvest", label: "Harvest", hint: "1 move", icon: Wheat },
-  { id: "sell", label: "Sell", hint: "moves price", icon: HandCoins },
-  { id: "hire", label: "Hire", hint: "next day", icon: Tractor },
+  { id: "sell", label: "Sell", hint: "selected stock", icon: HandCoins },
+  { id: "hire", label: "Hire", hint: "capacity now", icon: Tractor },
   { id: "land", label: "Land", hint: "1,000¢+", icon: CircleDollarSign },
 ];
 
@@ -24,4 +24,3 @@ export function ActionDock({ active, disabled = [], onAction }: { active?: Actio
     </div>
   );
 }
-
