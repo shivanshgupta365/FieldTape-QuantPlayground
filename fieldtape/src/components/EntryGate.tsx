@@ -5,12 +5,27 @@ import { supabase } from "../lib/supabase"
 export function EntryGate({ children }: { children: React.ReactNode }) {
   const location = useLocation()
   const [ready, setReady] = useState(false)
-  const [signedIn, setSignedIn] = useState(false)
+  const [hasProfile, setHasProfile] = useState(false)
   useEffect(() => {
-    if (!supabase) return setReady(true)
-    void supabase.auth.getUser().then(({ data }) => { setSignedIn(Boolean(data.user)); setReady(true) })
+    const client = supabase
+    if (!client) return setReady(true)
+    void client.auth.getUser().then(async ({ data }) => {
+      const user = data.user
+      if (!user) {
+        setHasProfile(false)
+        setReady(true)
+        return
+      }
+      const { data: profile } = await client
+        .from("profiles")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle()
+      setHasProfile(Boolean(profile))
+      setReady(true)
+    })
   }, [])
   if (!ready) return <div className="loading-tape" role="status"><span>ALPSTEAD</span><i /><small>checking field notes…</small></div>
-  if (!signedIn) return <Navigate replace to={`/join?next=${encodeURIComponent(location.pathname + location.search)}`} />
+  if (!hasProfile) return <Navigate replace to={`/join?next=${encodeURIComponent(location.pathname + location.search)}`} />
   return <>{children}</>
 }
