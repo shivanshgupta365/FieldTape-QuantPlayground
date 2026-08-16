@@ -13,8 +13,12 @@ function reply(status: number, body: Record<string, unknown>) {
   return Response.json(body, { status, headers: { ...CORS, "cache-control": "no-store" } });
 }
 
-function actionLog(value: unknown): GameAction[][] | null {
-  if (!Array.isArray(value) || value.length !== TOTAL_TURNS) return null;
+function actionLog(value: unknown, runKind: "season" | "practice"): GameAction[][] | null {
+  if (!Array.isArray(value)) return null;
+  const validLength = runKind === "season"
+    ? value.length === TOTAL_TURNS
+    : value.length >= 24 && value.length <= TOTAL_TURNS && value.length % 24 === 0;
+  if (!validLength) return null;
   const entries: GameAction[][] = [];
   for (const turn of value) {
     if (!Array.isArray(turn) || turn.length < 1 || turn.length > 12) return null;
@@ -39,8 +43,9 @@ export default {
     let payload: Record<string, unknown>;
     try { payload = await request.json(); } catch { return reply(400, { reason: "invalid JSON" }); }
     if (payload.balanceVersion !== BALANCE_VERSION || typeof payload.seed !== "string") return reply(422, { reason: "unsupported season contract" });
-    const turns = actionLog(payload.actionLog);
-    if (!turns) return reply(422, { reason: `expected ${TOTAL_TURNS} normalized turns` });
+    const runKind = payload.runKind === "practice" ? "practice" : "season";
+    const turns = actionLog(payload.actionLog, runKind);
+    if (!turns) return reply(422, { reason: runKind === "season" ? `expected ${TOTAL_TURNS} normalized turns` : "practice runs must end after a whole day (24 turns)" });
     const admin = context.supabaseAdmin as any;
     const profile = await admin.from("profiles").select("display_name").eq("user_id", userId).maybeSingle();
     if (profile.error) return reply(503, { reason: "profile lookup failed" });
@@ -51,27 +56,32 @@ export default {
     try {
       for (const playerActions of turns) state = stepGame(state, { 0: playerActions, 1: baselineAction(state, 1, "balanced") });
     } catch { return reply(422, { reason: "the submitted action log cannot be replayed" }); }
-    if (state.status !== "finished" || state.engineVersion !== ENGINE_VERSION) return reply(422, { reason: "season did not finish" });
+    if ((runKind === "season" && state.status !== "finished") || state.engineVersion !== ENGINE_VERSION) return reply(422, { reason: "season did not finish" });
     // Idempotency belongs to one player. Identical deterministic moves from two
     // different people must create two legitimate board entries, while a retry
     // from the same player remains a no-op.
-    const runHash = await sha256({ userId, seed: String(state.seed), balanceVersion: BALANCE_VERSION, actionLog: turns });
+    const runHash = await sha256({ userId, runKind, seed: String(state.seed), balanceVersion: BALANCE_VERSION, actionLog: turns });
     const actionCount = turns.reduce((count, turn) => count + turn.length, 0);
-    const existing = await admin.from("season_runs").select("id").eq("user_id", userId).eq("run_hash", runHash).maybeSingle();
+    const table = runKind === "practice" ? "practice_runs" : "season_runs";
+    const board = runKind === "practice" ? "practice_leaderboard_public" : "season_leaderboard";
+    const existing = await admin.from(table).select("id").eq("user_id", userId).eq("run_hash", runHash).maybeSingle();
     let runId = existing.data?.id as string | undefined;
     if (!runId) {
       const quota = await admin.rpc("consume_challenge_submission_quota", { p_user_id: userId, p_limit: 12, p_window_seconds: 900 }).single();
       if (quota.error) return reply(503, { reason: "submission quota unavailable" });
       if (!quota.data.allowed) return reply(429, { reason: "submission rate limit reached", retryAfterSeconds: quota.data.retry_after_seconds });
-      const inserted = await admin.from("season_runs").insert({ user_id: userId, display_name: profile.data.display_name, balance_version: BALANCE_VERSION, seed: String(state.seed), final_money: state.farms[0].money, days_completed: state.day, actions_used: actionCount, action_log: turns, run_hash: runHash, verified: true, verifier_version: "season-replay-v1", verified_at: new Date().toISOString() }).select("id").single();
+      const inserted = await admin.from(table).insert({ user_id: userId, display_name: profile.data.display_name, balance_version: BALANCE_VERSION, seed: String(state.seed), final_money: state.farms[0].money, days_completed: turns.length / 24, actions_used: actionCount, action_log: turns, run_hash: runHash, verified: true, verifier_version: "season-replay-v1", verified_at: new Date().toISOString() }).select("id").single();
       if (inserted.error) {
         if (inserted.error.code !== "23505") return reply(503, { reason: "verified score could not be stored" });
-        const retry = await admin.from("season_runs").select("id").eq("user_id", userId).eq("run_hash", runHash).single();
+        const retry = await admin.from(table).select("id").eq("user_id", userId).eq("run_hash", runHash).single();
         if (retry.error) return reply(503, { reason: "verified score could not be stored" });
         runId = retry.data.id;
       } else runId = inserted.data.id;
     }
-    const ranked = await admin.from("season_leaderboard").select("rank").eq("id", runId).single();
-    return reply(existing.data ? 200 : 201, { verified: true, rank: ranked.data?.rank ?? null, finalMoney: state.farms[0].money });
+    const rankQuery = runKind === "practice"
+      ? admin.from(board).select("rank").eq("balance_version", BALANCE_VERSION).eq("days_completed", turns.length / 24).eq("display_name", profile.data.display_name).eq("final_money", state.farms[0].money).order("rank").limit(1).maybeSingle()
+      : admin.from(board).select("rank").eq("id", runId).single();
+    const ranked = await rankQuery;
+    return reply(existing.data ? 200 : 201, { verified: true, rank: ranked.data?.rank ?? null, finalMoney: state.farms[0].money, daysCompleted: turns.length / 24, runKind });
   }),
 };

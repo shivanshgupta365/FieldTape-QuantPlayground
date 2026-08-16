@@ -53,7 +53,7 @@ function mapRow(row: RawRow): BoardRow {
  * second scan on very large tables; at leaderboard scale it is cheap and being
  * able to say "of 3,412" is worth it.
  */
-export async function fetchBoardPage(page = 0): Promise<BoardPage> {
+export async function fetchBoardPage(page = 0, board: "season" | "practice" = "season", days?: number): Promise<BoardPage> {
   if (!hasSupabase || !supabase) {
     return { rows: [], total: 0, offline: true }
   }
@@ -62,12 +62,13 @@ export async function fetchBoardPage(page = 0): Promise<BoardPage> {
   const to = from + PAGE_SIZE - 1
 
   const { data, error, count } = await supabase
-    .from("season_leaderboard_public")
+    .from(board === "practice" ? "practice_leaderboard_public" : "season_leaderboard_public")
     .select(
       "rank,display_name,final_money,days_completed,actions_used",
       { count: "exact" },
     )
     .eq("balance_version", BRAND.balanceVersion)
+    .eq("days_completed", board === "practice" ? days ?? 1 : 30)
     .order("rank", { ascending: true })
     .range(from, to)
 
@@ -98,6 +99,7 @@ export interface RunSubmission {
   daysCompleted: number
   actionsUsed: number
   actionLog: unknown[]
+  runKind?: "season" | "practice"
 }
 
 /**

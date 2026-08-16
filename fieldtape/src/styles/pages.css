@@ -124,6 +124,7 @@
 .coach-ask:disabled { opacity: 0.55; cursor: default; }
 
 .board-meta { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; font-size: 11px; letter-spacing: 0.05em; color: var(--muted); text-transform: uppercase; }
+.board-tabs{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:1.5rem}.board-tabs button,.board-tabs select{border:1px solid var(--line);background:var(--paper-light);padding:.55rem .75rem;font-family:var(--font-mono);font-size:.55rem;cursor:pointer}.board-tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}.board-tabs label{display:flex;align-items:center;gap:.45rem;font-family:var(--font-mono);font-size:.52rem}.practice-post{display:grid;gap:.45rem;margin-top:1rem;padding:.8rem;border:1px solid var(--line);font-family:var(--font-mono);font-size:.5rem}.practice-post button{padding:.65rem;border:0;background:var(--gold);font:inherit;font-weight:800;cursor:pointer}.practice-post small{color:var(--muted)}.practice-post span{color:var(--cyan);background:var(--ink);padding:.45rem}
 .board-meta code { font-size: 11px; background: var(--paper-deep); padding: 1px 6px; border-radius: 4px; text-transform: none; }
 
 .board-skeleton { display: flex; flex-direction: column; gap: 6px; }

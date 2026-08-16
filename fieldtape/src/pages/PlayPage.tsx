@@ -55,6 +55,8 @@ export function PlayPage() {
   const [actionLog, setActionLog] = useState<GameAction[][]>([]);
   const [posting, setPosting] = useState(false);
   const [postNotice, setPostNotice] = useState("");
+  const [practicePosting, setPracticePosting] = useState(false);
+  const [practiceNotice, setPracticeNotice] = useState("");
   const clock = selectClock(state);
   const score = selectScoreboard(state);
   const metrics = selectFarmMetrics(state, 0);
@@ -159,6 +161,14 @@ export function PlayPage() {
     setPosting(false)
     setPostNotice(result.ok ? `Verified — you are #${result.rank}.` : result.message)
   }
+  const completedDays = Math.floor(state.turn / state.config.turnsPerDay);
+  const postPractice = async () => {
+    if (completedDays < 1 || state.turn % state.config.turnsPerDay !== 0) return;
+    setPracticePosting(true);
+    const result = await submitRun({ seed: String(state.seed), finalMoney: score[0].money, daysCompleted: completedDays, actionsUsed: actionLog.flat().length, actionLog, runKind: "practice" });
+    setPracticePosting(false);
+    setPracticeNotice(result.ok ? `Verified ${completedDays}-day checkpoint — rank #${result.rank ?? "—"}.` : result.message);
+  };
 
   const coachState = useCallback(() => ({
     day: state.day,
@@ -247,6 +257,7 @@ export function PlayPage() {
           <section className="inventory-panel"><header><span>PUBLIC DESK INVENTORY</span><select aria-label="Product to sell" value={sellProduct} onChange={(event) => setSellProduct(event.target.value as ProductId)}>{PRODUCT_IDS.map((product) => <option key={product} value={product}>{product} · {state.farms[0].stock[product]}u</option>)}</select></header><div className="inventory-grid">{PRODUCT_IDS.slice(0, 8).map((product) => <div key={product}><span>{symbols[product] ?? product.slice(0, 3)}</span><b>{state.farms[0].stock[product]}</b></div>)}</div></section>
 
           <button className="delegate-button" onClick={delegateDay} disabled={finished}><Bot size={15} /> Delegate rest of day <SkipForward size={14} /></button>
+          {completedDays >= 1 && !finished && state.turn % state.config.turnsPerDay === 0 && <div className="practice-post"><button type="button" onClick={() => void postPractice()} disabled={practicePosting}>{practicePosting ? "Verifying checkpoint…" : `Post ${completedDays}-day practice run`}</button><small>Server-replayed · ranked only with {completedDays}-day runs</small>{practiceNotice && <span>{practiceNotice}</span>}</div>}
           <p className="rail-caveat"><CircleHelp size={13} /> Delegation uses the inspectable public steady baseline. It never calls the private competition agent.</p>
         </aside>
       </div>

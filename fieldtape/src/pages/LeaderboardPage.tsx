@@ -10,10 +10,12 @@ export function LeaderboardPage() {
   const [total, setTotal] = useState(0)
   const [offline, setOffline] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [board, setBoard] = useState<"season" | "practice">("season")
+  const [practiceDays, setPracticeDays] = useState(1)
 
   useEffect(() => {
     let cancelled = false
-    const load = () => fetchBoardPage(page).then((result) => {
+    const load = () => fetchBoardPage(page, board, practiceDays).then((result) => {
       // Guard against a stale response landing after a newer page request.
       if (cancelled) return
       setRows(result.rows)
@@ -28,7 +30,7 @@ export function LeaderboardPage() {
       cancelled = true
       window.clearInterval(timer)
     }
-  }, [page])
+  }, [page, board, practiceDays])
 
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE))
   const showing = rows.length
@@ -39,8 +41,8 @@ export function LeaderboardPage() {
     <div className="page leaderboard-page">
       <PageHeader
         eyebrow="Season board"
-        title="Thirty days. One bank balance."
-        dek="Every score here was replayed on the server from the player's own action log before it was allowed on the board."
+        title={board === "season" ? "Thirty days. One bank balance." : `${practiceDays}-day practice board.`}
+        dek={board === "season" ? "Every full-season score was replayed on the server from the player's own action log before it was allowed on the board." : "Practice checkpoints are replayed after every completed day. Compare only with runs of the same length."}
         aside={
           <div className="verification-badge">
             <ShieldCheck />
@@ -49,6 +51,8 @@ export function LeaderboardPage() {
           </div>
         }
       />
+
+      <div className="board-tabs" role="tablist" aria-label="Leaderboard type"><button type="button" role="tab" aria-selected={board === "season"} onClick={() => { setBoard("season"); setPage(0); }}>30-day season</button><button type="button" role="tab" aria-selected={board === "practice"} onClick={() => { setBoard("practice"); setPage(0); }}>Practice checkpoints</button>{board === "practice" && <label>Days<select value={practiceDays} onChange={(event) => { setPracticeDays(Number(event.target.value)); setPage(0); }}>{Array.from({ length: 30 }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1} day{index ? "s" : ""}</option>)}</select></label>}</div>
 
       <div className="board-meta">
         <span className="board-balance">
@@ -74,10 +78,9 @@ export function LeaderboardPage() {
       ) : rows.length === 0 ? (
         <div className="board-empty">
           <Trophy size={26} />
-          <h2>No verified seasons yet</h2>
+          <h2>{board === "season" ? "No verified seasons yet" : `No ${practiceDays}-day practice runs yet`}</h2>
           <p>
-            Finish a full thirty-day season and post it. The first verified run takes
-            the top of the board.
+            {board === "season" ? "Finish a full thirty-day season and post it. The first verified run takes the top of the board." : "Complete that many whole days, then post the checkpoint from Play."}
           </p>
         </div>
       ) : (
@@ -98,7 +101,7 @@ export function LeaderboardPage() {
                 </span>
                 <strong>{row.displayName}</strong>
                 <b>¢{row.finalMoney.toLocaleString()}</b>
-                <span>{row.daysCompleted} / 30</span>
+                <span>{row.daysCompleted} / {board === "season" ? 30 : practiceDays}</span>
                 <span>{row.actionsUsed.toLocaleString()}</span>
               </div>
             ))}
